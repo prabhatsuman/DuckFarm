@@ -1,5 +1,7 @@
 # management/views.py
+from django.db.models import Sum
 from rest_framework import viewsets, generics
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -48,6 +50,12 @@ class DuckInfoViewSet(viewsets.ModelViewSet):
     queryset = DuckInfo.objects.all()
     serializer_class = DuckInfoSerializer
     permission_classes = [IsAuthenticated]
+    @action(detail=False, methods=['get'], url_path='total', permission_classes=[IsAuthenticated])
+    def total_ducks(self, request):
+        total_male = DuckInfo.objects.aggregate(Sum('male_count'))['male_count__sum'] or 0
+        total_female = DuckInfo.objects.aggregate(Sum('female_count'))['female_count__sum'] or 0
+        total = total_male + total_female
+        return Response({'total': total})
 
 class DealerViewSet(viewsets.ModelViewSet):
     queryset = Dealer.objects.all()

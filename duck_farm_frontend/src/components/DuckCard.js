@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { FiInfo, FiPlus, FiMinus } from 'react-icons/fi'; // Import icons from react-icons library
+import { FiInfo, FiPlus } from 'react-icons/fi'; // Import icons from react-icons library
+import AddDuckForm from './AddDuckForm'; // Import the AddDuckForm component
+import DuckInfoPopup from './DuckInfoPopup'; // Import the DuckInfoPopup component
 
 const DuckCard = ({ logoUrl }) => {
     const [totalDucks, setTotalDucks] = useState(0);
     const [hovered, setHovered] = useState(false);
     const [hoveredButton, setHoveredButton] = useState(null);
-    const [duckInfo, setDuckInfo] = useState(null);
+    const [showAddDuckForm, setShowAddDuckForm] = useState(false);
+    const [showDuckInfoPopup, setShowDuckInfoPopup] = useState(false); // State to toggle DuckInfoPopup
 
     useEffect(() => {
         fetchTotalDucks();
@@ -13,7 +16,7 @@ const DuckCard = ({ logoUrl }) => {
 
     const fetchTotalDucks = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/ducks', {
+            const response = await fetch('http://127.0.0.1:8000/api/duck_info/total/', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                 }
@@ -37,6 +40,7 @@ const DuckCard = ({ logoUrl }) => {
     const handleMouseLeave = () => {
         setHovered(false);
     };
+
     const handleButtonMouseEnter = (buttonType) => {
         setHoveredButton(buttonType);
     };
@@ -45,65 +49,22 @@ const DuckCard = ({ logoUrl }) => {
         setHoveredButton(null);
     };
 
-    const handleViewAdditionalInfo = async () => {
-        try {
-            const response = await fetch('http://127.0.0.1:8000/api/ducks/info', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setDuckInfo(data);
-            } else {
-                console.error('Failed to fetch duck info');
-            }
-        } catch (error) {
-            console.error('Error fetching duck info:', error);
-        }
+    const handleAddDucks = () => {
+        setShowAddDuckForm(true);
     };
 
-    const handleAddDucks = async () => {
-        try {
-            const response = await fetch('http://127.0.0.1:8000/api/ducks/add', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ amount: 1 })
-            });
-
-            if (response.ok) {
-                fetchTotalDucks(); // Refresh the total ducks count
-            } else {
-                console.error('Failed to add ducks');
-            }
-        } catch (error) {
-            console.error('Error adding ducks:', error);
-        }
+    const handleDuckAdded = () => {
+        setShowAddDuckForm(false);
+        fetchTotalDucks(); // Refresh the total ducks count
     };
 
-    const handleRemoveDucks = async () => {
-        try {
-            const response = await fetch('http://127.0.0.1:8000/api/ducks/remove', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ amount: 1 })
-            });
+    const handleShowDuckInfo = () => {
+        setShowDuckInfoPopup(true);
+    };
 
-            if (response.ok) {
-                fetchTotalDucks(); // Refresh the total ducks count
-            } else {
-                console.error('Failed to remove ducks');
-            }
-        } catch (error) {
-            console.error('Error removing ducks:', error);
-        }
+    const handleCloseDuckInfo = () => {
+        setShowDuckInfoPopup(false);
+        fetchTotalDucks(); // Refresh the total ducks count when closing DuckInfoPopup
     };
 
     return (
@@ -125,50 +86,46 @@ const DuckCard = ({ logoUrl }) => {
                             </div>
                         ) : (
                             <div className="flex items-center mt-4">
-                            <button
-                                className="relative flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full hover:bg-blue-600 mr-2"
-                                onClick={handleViewAdditionalInfo}
-                                onMouseEnter={() => handleButtonMouseEnter('info')}
-                                onMouseLeave={handleButtonMouseLeave}
-                            >
-                                <FiInfo className="text-lg" />
-                                {hoveredButton === 'info' && (
-                                    <span className="absolute bottom-8 text-xs bg-yellow-200 text-black py-1 px-3 rounded-lg shadow-lg">
-                                        Additional Info
-                                    </span>
-                                )}
-                            </button>
-                            <button
-                                className="relative flex items-center justify-center w-8 h-8 bg-green-500 text-white rounded-full hover:bg-green-600 mr-2"
-                                onClick={handleAddDucks}
-                                onMouseEnter={() => handleButtonMouseEnter('add')}
-                                onMouseLeave={handleButtonMouseLeave}
-                            >
-                                <FiPlus className="text-lg" />
-                                {hoveredButton === 'add' && (
-                                    <span className="absolute bottom-8 text-xs bg-yellow-200 text-black py-1 px-3 rounded-lg shadow-lg">
-                                        Add Ducks
-                                    </span>
-                                )}
-                            </button>
-                            <button
-                                className="relative flex items-center justify-center w-8 h-8 bg-red-500 text-white rounded-full hover:bg-red-600"
-                                onClick={handleRemoveDucks}
-                                onMouseEnter={() => handleButtonMouseEnter('remove')}
-                                onMouseLeave={handleButtonMouseLeave}
-                            >
-                                <FiMinus className="text-lg" />
-                                {hoveredButton === 'remove' && (
-                                    <span className="absolute bottom-8 text-xs bg-yellow-200 text-black py-1 px-3 rounded-lg shadow-lg">
-                                        Remove Ducks
-                                    </span>
-                                )}
-                            </button>
-                        </div>
+                                <button
+                                    className="relative flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full hover:bg-blue-600 mr-2"
+                                    onMouseEnter={() => handleButtonMouseEnter('info')}
+                                    onMouseLeave={handleButtonMouseLeave}
+                                    onClick={handleShowDuckInfo} // Show DuckInfoPopup onClick
+                                >
+                                    <FiInfo className="text-lg" />
+                                    {hoveredButton === 'info' && (
+                                        <span className="absolute bottom-8 text-xs bg-yellow-200 text-black py-1 px-3 rounded-lg shadow-lg">
+                                            Additional Info
+                                        </span>
+                                    )}
+                                </button>
+                                <button
+                                    className="relative flex items-center justify-center w-8 h-8 bg-green-500 text-white rounded-full hover:bg-green-600 mr-2"
+                                    onClick={handleAddDucks}
+                                    onMouseEnter={() => handleButtonMouseEnter('add')}
+                                    onMouseLeave={handleButtonMouseLeave}
+                                >
+                                    <FiPlus className="text-lg" />
+                                    {hoveredButton === 'add' && (
+                                        <span className="absolute bottom-8 text-xs bg-yellow-200 text-black py-1 px-3 rounded-lg shadow-lg">
+                                            Add Ducks
+                                        </span>
+                                    )}
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>
             </div>
+            {showAddDuckForm && (
+                <AddDuckForm
+                    onClose={() => setShowAddDuckForm(false)}
+                    onDuckAdded={handleDuckAdded}
+                />
+            )}
+            {showDuckInfoPopup && (
+                <DuckInfoPopup onClose={handleCloseDuckInfo} />
+            )}
         </div>
     );
 };

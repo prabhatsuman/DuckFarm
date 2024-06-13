@@ -13,7 +13,7 @@ class Dealer(models.Model):
         return self.name
 
 class DuckInfo(models.Model):
-    breed = models.CharField(max_length=100)
+    breed = models.CharField(max_length=100,unique=True)
     male_count = models.IntegerField()
     female_count = models.IntegerField()  
 
