@@ -15,11 +15,11 @@ class Dealer(models.Model):
 class DuckInfo(models.Model):
     breed = models.CharField(max_length=100)
     male_count = models.IntegerField()
-    female_count = models.IntegerField()
-    dealer = models.ForeignKey(Dealer, related_name='ducks', on_delete=models.CASCADE)
+    female_count = models.IntegerField()  
 
     def __str__(self):
         return f"{self.breed} - {self.dealer.name}"
+    
 
 class Expanses(models.Model):
     date = models.DateField()
