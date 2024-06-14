@@ -5,5 +5,5 @@ from .models import DuckInfo, Dealer, Expanses, Stock
 admin.site.register(DuckInfo)
 admin.site.register(Dealer)
 admin.site.register(Expanses)
-admin.site.register(Stock)
+
 

@@ -7,13 +7,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from .models import DuckInfo, Dealer, Expanses, Stock
+from .models import DuckInfo, Dealer, Expanses, Stock, FeedStock, MedicineStock, OtherStock
 from .serializers import (
     DuckInfoSerializer,
     DealerSerializer,
     ExpansesSerializer,
     RegisterSerializer,
-    StockSerializer
+    FeedStockSerializer,
+    MedicineStockSerializer,
+    OtherStockSerializer
+    
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -67,7 +70,18 @@ class ExpansesViewSet(viewsets.ModelViewSet):
     serializer_class = ExpansesSerializer
     permission_classes = [IsAuthenticated]
 
-class StockViewSet(viewsets.ModelViewSet):
-    queryset = Stock.objects.all()
-    serializer_class = StockSerializer
+
+class FeedStockViewSet(viewsets.ModelViewSet):
+    queryset = FeedStock.objects.all()
+    serializer_class = FeedStockSerializer
+    permission_classes = [IsAuthenticated]
+
+class MedicineStockViewSet(viewsets.ModelViewSet):
+    queryset = MedicineStock.objects.all()
+    serializer_class = MedicineStockSerializer
+    permission_classes = [IsAuthenticated]
+
+class OtherStockViewSet(viewsets.ModelViewSet):
+    queryset = OtherStock.objects.all()
+    serializer_class = OtherStockSerializer
     permission_classes = [IsAuthenticated]

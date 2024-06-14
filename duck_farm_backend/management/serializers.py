@@ -1,7 +1,7 @@
 # management/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import DuckInfo, Dealer, Expanses, Stock
+from .models import DuckInfo, Dealer, Expanses, FeedStock, MedicineStock, OtherStock
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -43,7 +43,17 @@ class ExpansesSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class StockSerializer(serializers.ModelSerializer):
+class FeedStockSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Stock
+        model = FeedStock
+        fields = '__all__'
+
+class MedicineStockSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MedicineStock
+        fields = '__all__'
+
+class OtherStockSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OtherStock
         fields = '__all__'
