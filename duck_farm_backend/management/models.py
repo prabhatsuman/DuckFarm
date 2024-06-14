@@ -37,7 +37,7 @@ class Stock(models.Model):
         ('medicine', 'Medicine'),
         ('other', 'Other'),
     ]
-    stock_type = models.CharField(max_length=10, choices=STOCK_TYPE_CHOICES)
+    
     description = models.TextField(blank=True, null=True)
 
     class Meta:

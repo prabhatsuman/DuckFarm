@@ -11,6 +11,7 @@ export default function Sidebar({ isOpen }) {
                 <nav className="mt-6">
                     <Link to="/dashboard" className="block py-2.5 px-4 rounded hover:bg-gray-100">Home</Link>
                     <Link to="/dashboard/dealerinfo" className="block py-2.5 px-4 rounded hover:bg-gray-100">Dealer Info</Link>
+                    <Link to="/dashboard/stockinfo" className="block py-2.5 px-4 rounded hover:bg-gray-100">Stock Info</Link>
                 </nav>
             </div>
         </div>

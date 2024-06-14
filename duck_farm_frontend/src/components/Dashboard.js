@@ -4,6 +4,7 @@ import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import DealerInfo from './DealerInfo';
 import Home from './Home';
+import StockTable from './StockTable';
 
 export default function Dashboard() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -21,6 +22,7 @@ export default function Dashboard() {
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="dealerinfo" element={<DealerInfo />} />
+                        <Route path="stockinfo" element={<StockTable />} />
                     </Routes>
                 </main>
             </div>
