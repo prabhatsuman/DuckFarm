@@ -5,9 +5,7 @@ import DeleteDealerConfirmation from "./DeleteDealerConfirmation";
 import {
   FiEdit,
   FiTrash,
-  FiPlus,
-  FiChevronUp,
-  FiChevronDown,
+ 
 } from "react-icons/fi";
 
 const DealerInfo = () => {
@@ -118,7 +116,7 @@ const DealerInfo = () => {
         </button>
       </div>
       <div className="overflow-hidden overflow-y-auto max-h-[calc(100vh-250px)]">
-        <table className="w-full divide-y divide-gray-200">
+        <table className="w-full divide-y divide-gray-300">
           <thead className="bg-gray-50 sticky top-0 z-10">
             <tr>
               <th
@@ -127,12 +125,7 @@ const DealerInfo = () => {
               >
                 Name
               </th>
-              <th
-                scope="col"
-                className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal"
-              >
-                Description
-              </th>
+              
               <th
                 scope="col"
                 className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal"
@@ -168,8 +161,7 @@ const DealerInfo = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {currentDealers.map((dealer) => (
               <tr key={dealer.id}>
-                <td className="px-6 py-4">{dealer.name}</td>
-                <td className="px-6 py-4">{dealer.description}</td>
+                <td className="px-6 py-4">{dealer.name}</td>               
                 <td className="px-6 py-4">{dealer.address}</td>
                 <td className="px-6 py-4">{dealer.email}</td>
                 <td className="px-6 py-4">{dealer.phone_number}</td>
