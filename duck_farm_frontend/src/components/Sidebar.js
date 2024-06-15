@@ -12,6 +12,7 @@ export default function Sidebar({ isOpen }) {
                     <Link to="/dashboard" className="block py-2.5 px-4 rounded hover:bg-gray-100">Home</Link>
                     <Link to="/dashboard/dealerinfo" className="block py-2.5 px-4 rounded hover:bg-gray-100">Dealer Info</Link>
                     <Link to="/dashboard/stockinfo" className="block py-2.5 px-4 rounded hover:bg-gray-100">Stock Info</Link>
+                    <Link to="/dashboard/eggcollection" className="block py-2.5 px-4 rounded hover:bg-gray-100">Egg Collection</Link>
                 </nav>
             </div>
         </div>

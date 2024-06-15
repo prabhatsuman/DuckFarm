@@ -1,13 +1,15 @@
 # management/urls.py
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import DuckInfoViewSet, DealerViewSet, ExpansesViewSet, RegisterView, LoginView, FeedStockViewSet, MedicineStockViewSet, OtherStockViewSet
+from .views import DuckInfoViewSet, DealerViewSet, ExpansesViewSet, RegisterView, LoginView, FeedStockViewSet, MedicineStockViewSet, OtherStockViewSet, DailyEggCollectionViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 router = DefaultRouter()
 router.register('duck_info', DuckInfoViewSet)
 router.register('dealer_info', DealerViewSet)
 router.register('expanses_info', ExpansesViewSet)
+router.register('egg_stock', DailyEggCollectionViewSet)
+
 stock_router = DefaultRouter()
 stock_router.register('feed', FeedStockViewSet)
 stock_router.register('medicine', MedicineStockViewSet)

@@ -5,6 +5,7 @@ import DeleteDealerConfirmation from "./DeleteDealerConfirmation";
 import {
   FiEdit,
   FiTrash,
+  FiPlus,
  
 } from "react-icons/fi";
 
@@ -108,11 +109,12 @@ const DealerInfo = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+       
         <button
+          className="flex items-center bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
           onClick={handleAddDealer}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md"
         >
-          Add Dealer
+          <FiPlus className="mr-2" /> Add Dealer
         </button>
       </div>
       <div className="overflow-hidden overflow-y-auto max-h-[calc(100vh-250px)]">

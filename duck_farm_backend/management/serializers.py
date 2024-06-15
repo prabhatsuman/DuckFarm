@@ -1,7 +1,8 @@
 # management/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import DuckInfo, Dealer, Expanses, FeedStock, MedicineStock, OtherStock
+from .models import DuckInfo, Dealer, Expanses, FeedStock, MedicineStock, OtherStock, EggStock, DailyEggCollection
+from datetime import datetime
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -48,12 +49,33 @@ class FeedStockSerializer(serializers.ModelSerializer):
         model = FeedStock
         fields = '__all__'
 
+
 class MedicineStockSerializer(serializers.ModelSerializer):
     class Meta:
         model = MedicineStock
         fields = '__all__'
 
+
 class OtherStockSerializer(serializers.ModelSerializer):
     class Meta:
         model = OtherStock
+        fields = '__all__'
+
+
+class EggStockSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EggStock
+        fields = '__all__'
+
+
+class DailyEggCollectionSerializer(serializers.ModelSerializer):
+    date = serializers.DateField()
+
+    def validate_date(self, value):
+        if isinstance(value, datetime):
+            return value.date()
+        return value
+
+    class Meta:
+        model = DailyEggCollection
         fields = '__all__'

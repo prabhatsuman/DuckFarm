@@ -5,6 +5,7 @@ import Sidebar from './Sidebar';
 import DealerInfo from './DealerInfo';
 import Home from './Home';
 import StockTable from './StockTable';
+import EggCollectionCalander from './EggCollectionCalander';
 
 export default function Dashboard() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -23,6 +24,7 @@ export default function Dashboard() {
                         <Route path="/" element={<Home />} />
                         <Route path="dealerinfo" element={<DealerInfo />} />
                         <Route path="stockinfo" element={<StockTable />} />
+                        <Route path="eggcollection" element={<EggCollectionCalander />} />
                     </Routes>
                 </main>
             </div>

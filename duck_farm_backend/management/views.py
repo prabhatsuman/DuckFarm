@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from .models import DuckInfo, Dealer, Expanses, Stock, FeedStock, MedicineStock, OtherStock
+from .models import DuckInfo, Dealer, Expanses, Stock, FeedStock, MedicineStock, OtherStock, EggStock, DailyEggCollection
 from .serializers import (
     DuckInfoSerializer,
     DealerSerializer,
@@ -15,7 +15,9 @@ from .serializers import (
     RegisterSerializer,
     FeedStockSerializer,
     MedicineStockSerializer,
-    OtherStockSerializer
+    OtherStockSerializer,
+    EggStockSerializer,
+    DailyEggCollectionSerializer
     
 )
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -85,3 +87,14 @@ class OtherStockViewSet(viewsets.ModelViewSet):
     queryset = OtherStock.objects.all()
     serializer_class = OtherStockSerializer
     permission_classes = [IsAuthenticated]
+    
+class DailyEggCollectionViewSet(viewsets.ModelViewSet):
+    queryset = DailyEggCollection.objects.all()
+    serializer_class = DailyEggCollectionSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['get'], url_path='total_stock', permission_classes=[IsAuthenticated])
+    def total_stock(self, request):
+        egg_stock, created = EggStock.objects.get_or_create(id=1)
+        serializer = EggStockSerializer(egg_stock)
+        return Response(serializer.data)

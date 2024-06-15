@@ -1,5 +1,7 @@
 # management/models.py
 from django.db import models
+from django.utils import timezone
+
 
 class Dealer(models.Model):
     name = models.CharField(max_length=100)
@@ -12,24 +14,27 @@ class Dealer(models.Model):
     def __str__(self):
         return self.name
 
+
 class DuckInfo(models.Model):
-    breed = models.CharField(max_length=100,unique=True)
+    breed = models.CharField(max_length=100, unique=True)
     male_count = models.IntegerField()
-    female_count = models.IntegerField()  
+    female_count = models.IntegerField()
 
     def __str__(self):
         return f"{self.breed} - {self.dealer.name}"
-    
+
 
 class Expanses(models.Model):
     date = models.DateField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
     exp_type = models.CharField(max_length=100)
-    dealer = models.ForeignKey(Dealer, related_name='expanses', on_delete=models.CASCADE)
+    dealer = models.ForeignKey(
+        Dealer, related_name='expanses', on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.type} - {self.amount}"
+
 
 class Stock(models.Model):
     STOCK_TYPE_CHOICES = [
@@ -37,11 +42,12 @@ class Stock(models.Model):
         ('medicine', 'Medicine'),
         ('other', 'Other'),
     ]
-    
+
     description = models.TextField(blank=True, null=True)
 
     class Meta:
         abstract = True
+
 
 class FeedStock(Stock):
     name = models.CharField(max_length=100)
@@ -49,6 +55,7 @@ class FeedStock(Stock):
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     date_of_purchase = models.DateField()
+
 
 class MedicineStock(Stock):
     name = models.CharField(max_length=100)
@@ -58,8 +65,29 @@ class MedicineStock(Stock):
     date_of_purchase = models.DateField()
     date_of_expiry = models.DateField()
 
+
 class OtherStock(Stock):
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField()
     date_of_purchase = models.DateField()
+
+
+class EggStock(models.Model):
+    total_stock = models.IntegerField(default=0)
+
+
+class DailyEggCollection(models.Model):
+    date = models.DateField(default=timezone.now)
+    quantity = models.IntegerField()
+
+    class Meta:
+        unique_together = ('date',)
+        ordering = ['-date']
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  # if this is a new object (not an update)
+            egg_stock, created = EggStock.objects.get_or_create(id=1)
+            egg_stock.total_stock += self.quantity
+            egg_stock.save()
+        super().save(*args, **kwargs)
