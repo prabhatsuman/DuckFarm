@@ -24,16 +24,22 @@ class DuckInfo(models.Model):
         return f"{self.breed} - {self.dealer.name}"
 
 
-class Expanses(models.Model):
+class Expense(models.Model):
+    EXPENSE_TYPES = [
+        ('buy_duck', 'Buy Duck'),
+        ('feed', 'Feed'),
+        ('medicine', 'Medicine'),
+        ('other_stocks', 'Other Stocks'),
+    ]
+
     date = models.DateField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
-    exp_type = models.CharField(max_length=100)
-    dealer = models.ForeignKey(
-        Dealer, related_name='expanses', on_delete=models.CASCADE)
+    exp_type = models.CharField(max_length=100, choices=EXPENSE_TYPES)
+    dealer = models.ForeignKey(Dealer, related_name='expenses', on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.type} - {self.amount}"
+        return f"{self.get_exp_type_display()} - {self.amount}"
 
 
 class Stock(models.Model):

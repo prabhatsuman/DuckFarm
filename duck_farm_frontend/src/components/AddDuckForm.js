@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 const AddDuckForm = ({ onClose, onDuckAdded }) => {
   const [formData, setFormData] = useState({
-    breed: '',
-    male_count: '',
-    female_count: '',
-    dealer: '',
-    purchase_date: '',
-    price_per_piece: ''
+    breed: "",
+    male_count: "",
+    female_count: "",
+    dealer: "",
+    purchase_date: "",
+    price_per_piece: "",
   });
   const [breeds, setBreeds] = useState([]);
   const [dealers, setDealers] = useState([]);
@@ -20,108 +20,76 @@ const AddDuckForm = ({ onClose, onDuckAdded }) => {
 
   const fetchBreeds = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/duck_info/', {
+      const response = await fetch("http://127.0.0.1:8000/api/duck_info/", {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
       });
       const data = await response.json();
       setBreeds(data);
     } catch (error) {
-      console.error('Error fetching breeds:', error);
+      console.error("Error fetching breeds:", error);
     }
   };
 
   const fetchDealers = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/dealer_info/', {
+      const response = await fetch("http://127.0.0.1:8000/api/dealer_info/", {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
       });
       const data = await response.json();
       setDealers(data);
     } catch (error) {
-      console.error('Error fetching dealers:', error);
+      console.error("Error fetching dealers:", error);
     }
   };
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  const handleBreedChange = e => {
+  const handleBreedChange = (e) => {
     const value = e.target.value;
-    if (value === 'other') {
+    if (value === "other") {
       setIsOtherBreed(true);
-      setFormData(prevState => ({
+      setFormData((prevState) => ({
         ...prevState,
-        breed: ''
+        breed: "",
       }));
     } else {
       setIsOtherBreed(false);
-      setFormData(prevState => ({
+      setFormData((prevState) => ({
         ...prevState,
-        breed: value
+        breed: value,
       }));
     }
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/duck_info/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+        body: JSON.stringify(formData),
+      });
 
-    const selectedBreed = breeds.find(breed => breed.breed === formData.breed);
-
-    if (selectedBreed) {
-      // Update the count of the existing breed
-      const updatedFormData = {
-        ...formData,
-        male_count: parseInt(formData.male_count, 10) + selectedBreed.male_count,
-        female_count: parseInt(formData.female_count, 10) + selectedBreed.female_count
-      };
-
-      try {
-        const response = await fetch(`http://127.0.0.1:8000/api/duck_info/${selectedBreed.id}/`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          },
-          body: JSON.stringify(updatedFormData)
-        });
-
-        if (response.ok) {
-          onDuckAdded();
-        } else {
-          console.error('Failed to update duck');
-        }
-      } catch (error) {
-        console.error('Error updating duck:', error);
+      if (response.ok) {
+        onDuckAdded();
+      } else {
+        console.error("Failed to add duck");
       }
-    } else {
-      // Add a new breed
-      try {
-        const response = await fetch('http://127.0.0.1:8000/api/duck_info/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          },
-          body: JSON.stringify(formData)
-        });
-
-        if (response.ok) {
-          onDuckAdded();
-        } else {
-          console.error('Failed to add duck');
-        }
-      } catch (error) {
-        console.error('Error adding duck:', error);
-      }
+    } catch (error) {
+      console.error("Error adding duck:", error);
     }
   };
 
@@ -134,13 +102,13 @@ const AddDuckForm = ({ onClose, onDuckAdded }) => {
             <label className="block text-gray-700">Breed</label>
             <select
               name="breed"
-              value={isOtherBreed ? 'other' : formData.breed}
+              value={isOtherBreed ? "other" : formData.breed}
               onChange={handleBreedChange}
               className="w-full px-4 py-2 border rounded-md"
               required
             >
               <option value="">Select Breed</option>
-              {breeds.map(breed => (
+              {breeds.map((breed) => (
                 <option key={breed.breed} value={breed.breed}>
                   {breed.breed}
                 </option>
@@ -191,7 +159,7 @@ const AddDuckForm = ({ onClose, onDuckAdded }) => {
               required
             >
               <option value="">Select Dealer</option>
-              {dealers.map(dealer => (
+              {dealers.map((dealer) => (
                 <option key={dealer.id} value={dealer.id}>
                   {dealer.name} ({dealer.dealer_type})
                 </option>
