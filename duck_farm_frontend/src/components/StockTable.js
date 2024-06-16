@@ -343,9 +343,9 @@ const StockTable = () => {
       )}
       {showAddStockPopup && (
         <AddStockPopup
-          stockType={selectedStockType}
+        
           onClose={() => setShowAddStockPopup(false)}
-          onAddSuccess={handleAddSuccess}
+          onCreate={handleAddSuccess}
         />
       )}
       {showEditStockPopup && (

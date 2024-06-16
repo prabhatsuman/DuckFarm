@@ -18,7 +18,10 @@ from .serializers import (
     OtherStockSerializer,
     EggStockSerializer,
     DailyEggCollectionSerializer,
-    DuckBuySerializer
+    DuckBuySerializer,
+    FeedBuySerializer,
+    MedicineBuySerializer,
+    OtherBuySerializer
 
 )
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -103,7 +106,7 @@ class DuckInfoViewSet(viewsets.ModelViewSet):
 
             # Create expenses entry
             expense_data = {
-                'description': f"Bought {male_count} male and {female_count} female ducks of breed {breed}",
+                'description': f"Bought {male_count} male and {female_count} female ducks of breed {breed} at {price_per_piece} per piece",
                 'date': purchase_date,
                 'amount': amount,
                 'exp_type': 'buy_duck',
@@ -132,18 +135,147 @@ class FeedStockViewSet(viewsets.ModelViewSet):
     queryset = FeedStock.objects.all()
     serializer_class = FeedStockSerializer
     permission_classes = [IsAuthenticated]
+    
+    def create(self, request, *args, **kwargs):
+        serializer = FeedBuySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        name = validated_data['name']
+        brand = validated_data['brand']
+        quantity = validated_data['quantity']
+        price = validated_data['price']
+        date_of_purchase = validated_data['date_of_purchase']
+        dealer = validated_data['dealer']
+        description = validated_data['description']
+
+        try:
+            # Create a new instance
+            feed_stock = FeedStock.objects.create(
+                name=name,
+                brand=brand,
+                quantity=quantity,
+                price=price,
+                date_of_purchase=date_of_purchase,
+                description=description
+            )
+
+            # Calculate amount for expenses
+            amount = quantity * price
+
+            # Create expenses entry
+            expense_data = {
+                'description': f"Bought {quantity}kg of {name} feed of brand {brand} at {price} per unit",
+                'date': date_of_purchase,
+                'amount': amount,
+                'exp_type': 'feed',
+                'dealer': dealer
+            }
+            Expense.objects.create(**expense_data)
+
+            response_serializer = FeedStockSerializer(feed_stock)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MedicineStockViewSet(viewsets.ModelViewSet):
     queryset = MedicineStock.objects.all()
     serializer_class = MedicineStockSerializer
     permission_classes = [IsAuthenticated]
+    
+    def create(self, request, *args, **kwargs):
+        serializer = MedicineBuySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        name = validated_data['name']
+        brand = validated_data['brand']
+        quantity = validated_data['quantity']
+        price = validated_data['price']
+        date_of_purchase = validated_data['date_of_purchase']
+        date_of_expiry = validated_data['date_of_expiry']
+        dealer = validated_data['dealer']
+        description = validated_data['description']
+
+        try:
+            # Create a new instance
+            medicine_stock = MedicineStock.objects.create(
+                name=name,
+                brand=brand,
+                quantity=quantity,
+                price=price,
+                date_of_purchase=date_of_purchase,
+                date_of_expiry=date_of_expiry,
+                description=description
+            )
+
+            # Calculate amount for expenses
+            amount = quantity * price
+
+            # Create expenses entry
+            expense_data = {
+                'description': f"Bought {quantity}, {name} medicine of brand {brand} at {price} per unit",
+                'date': date_of_purchase,
+                'amount': amount,
+                'exp_type': 'medicine',
+                'dealer': dealer
+            }
+            Expense.objects.create(**expense_data)
+
+            response_serializer = MedicineStockSerializer(medicine_stock)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class OtherStockViewSet(viewsets.ModelViewSet):
     queryset = OtherStock.objects.all()
     serializer_class = OtherStockSerializer
     permission_classes = [IsAuthenticated]
+    
+    def create(self, request, *args, **kwargs):
+        serializer = OtherBuySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        name = validated_data['name']
+        price = validated_data['price']
+        quantity = validated_data['quantity']
+        date_of_purchase = validated_data['date_of_purchase']
+        dealer = validated_data['dealer']
+        description = validated_data['description']
+
+        try:
+            # Create a new instance
+            other_stock = OtherStock.objects.create(
+                name=name,
+                price=price,
+                quantity=quantity,
+                date_of_purchase=date_of_purchase,
+                description=description
+            )
+
+            # Calculate amount for expenses
+            amount = quantity * price
+
+            # Create expenses entry
+            expense_data = {
+                'description': f"Bought {quantity} {name} at {price} per unit",
+                'date': date_of_purchase,
+                'amount': amount,
+                'exp_type': 'other',
+                'dealer': dealer
+            }
+            Expense.objects.create(**expense_data)
+
+            response_serializer = OtherStockSerializer(other_stock)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DailyEggCollectionViewSet(viewsets.ModelViewSet):

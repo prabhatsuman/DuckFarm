@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { FiX } from "react-icons/fi";
+import React, { useEffect, useState } from "react";
+
 
 const AddStockPopup = ({ onClose, onCreate }) => {
   const stockTypes = ["feed", "medicine", "other"];
@@ -11,8 +11,10 @@ const AddStockPopup = ({ onClose, onCreate }) => {
     price: 0,
     dateOfPurchase: "",
     dateOfExpiry: "",
+    dealer: "",
     description: "",
   });
+  const[dealers, setDealers] = useState([]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,6 +23,23 @@ const AddStockPopup = ({ onClose, onCreate }) => {
       [name]: value,
     });
   };
+  useEffect(() => {
+    fetchDealers();
+  }, []);
+  const fetchDealers = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/dealer_info/", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      const data = await response.json();
+      setDealers(data);
+    } catch (error) {
+      console.error("Error fetching dealers:", error);
+    }
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,7 +49,9 @@ const AddStockPopup = ({ onClose, onCreate }) => {
         price: parseFloat(formData.price),
         quantity: parseInt(formData.quantity),
         date_of_purchase: formData.dateOfPurchase,
+        dealer: formData.dealer,
         description: formData.description,
+        
       };
 
       if (selectedStockType === "medicine") {
@@ -147,6 +168,29 @@ const AddStockPopup = ({ onClose, onCreate }) => {
                 className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
+            <div className="mb-4">
+              <label
+                htmlFor="dealer"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Dealer
+              </label>
+              <select
+                id="dealer"
+                name="dealer"
+                value={formData.dealer}
+                onChange={handleChange}
+                className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+                <option value="">Select Dealer</option>
+                {dealers.map((dealer) => (
+                  <option key={dealer.id} value={dealer.id}>
+                    {dealer.name} ({dealer.dealer_type})
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="mb-4">
               <label
                 htmlFor="description"
@@ -267,6 +311,28 @@ const AddStockPopup = ({ onClose, onCreate }) => {
             </div>
             <div className="mb-4">
               <label
+                htmlFor="dealer"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Dealer
+              </label>
+              <select
+                id="dealer"
+                name="dealer"
+                value={formData.dealer}
+                onChange={handleChange}
+                className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+                <option value="">Select Dealer</option>
+                {dealers.map((dealer) => (
+                  <option key={dealer.id} value={dealer.id}>
+                    {dealer.name} ({dealer.dealer_type})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-4">
+              <label
                 htmlFor="description"
                 className="block text-sm font-medium text-gray-700"
               >
@@ -350,6 +416,28 @@ const AddStockPopup = ({ onClose, onCreate }) => {
                 onChange={handleChange}
                 className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
+            </div>
+            <div className="mb-4">
+              <label
+                htmlFor="dealer"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Dealer
+              </label>
+              <select
+                id="dealer"
+                name="dealer"
+                value={formData.dealer}
+                onChange={handleChange}
+                className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+                <option value="">Select Dealer</option>
+                {dealers.map((dealer) => (
+                  <option key={dealer.id} value={dealer.id}>
+                    {dealer.name} ({dealer.dealer_type})
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="mb-4">
               <label

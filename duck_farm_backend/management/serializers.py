@@ -44,6 +44,15 @@ class FeedStockSerializer(serializers.ModelSerializer):
         model = FeedStock
         fields = '__all__'
 
+class FeedBuySerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    brand = serializers.CharField(max_length=100)
+    quantity = serializers.IntegerField()
+    price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    date_of_purchase = serializers.DateField()
+    dealer = serializers.PrimaryKeyRelatedField(queryset=Dealer.objects.all())
+    description= serializers.CharField(max_length=100, required=False,allow_blank=True)
+
 class DuckInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = DuckInfo
@@ -54,17 +63,22 @@ class DuckBuySerializer(serializers.Serializer):
     female_count=serializers.IntegerField()
     dealer=serializers.PrimaryKeyRelatedField(queryset=Dealer.objects.all())
     purchase_date=serializers.DateField()
-    price_per_piece=serializers.DecimalField(max_digits=10, decimal_places=2)
-    
-    
-    
-  
-    
+    price_per_piece=serializers.DecimalField(max_digits=10, decimal_places=2)   
     
 class MedicineStockSerializer(serializers.ModelSerializer):
     class Meta:
         model = MedicineStock
         fields = '__all__'
+        
+class MedicineBuySerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    brand = serializers.CharField(max_length=100)
+    quantity = serializers.IntegerField()
+    price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    date_of_purchase = serializers.DateField()
+    date_of_expiry=serializers.DateField()
+    dealer = serializers.PrimaryKeyRelatedField(queryset=Dealer.objects.all())
+    description= serializers.CharField(max_length=100, required=False,allow_blank=True)
 
 
 class OtherStockSerializer(serializers.ModelSerializer):
@@ -72,6 +86,15 @@ class OtherStockSerializer(serializers.ModelSerializer):
         model = OtherStock
         fields = '__all__'
 
+class OtherBuySerializer(serializers.Serializer):
+    name=serializers.CharField(max_length=100)
+    price=serializers.DecimalField(max_digits=10, decimal_places=2)
+    quantity=serializers.IntegerField() 
+    dealer = serializers.PrimaryKeyRelatedField(queryset=Dealer.objects.all())
+    date_of_purchase = serializers.DateField()
+    description= serializers.CharField(max_length=100, required=False,allow_blank=True)
+
+   
 
 class EggStockSerializer(serializers.ModelSerializer):
     class Meta:
