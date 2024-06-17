@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { FiEdit, FiTrash, FiPlus, FiChevronUp, FiChevronDown } from "react-icons/fi";
+import {
+  FiEdit,
+  FiTrash,
+  FiPlus,
+  FiChevronUp,
+  FiChevronDown,
+  FiDownload,
+} from "react-icons/fi";
 import AddStockPopup from "./AddStockPopup"; // Adjust the import path as per your folder structure
 import EditStockPopup from "./EditStockPopup"; // Import the EditStockPopup component
 import DeleteStockConfirmation from "./DeleteStockConfirmations"; // Import the DeleteStockConfirmation component
+import { CSVLink } from "react-csv";
 
 const StockTable = () => {
   const stockTypes = ["feed", "medicine", "other"];
-  const [selectedStockType, setSelectedStockType] = useState("");
+  const [selectedStockType, setSelectedStockType] = useState("feed");
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
@@ -17,7 +25,7 @@ const StockTable = () => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [showAddStockPopup, setShowAddStockPopup] = useState(false); // State to control the popup visibility
   const [showEditStockPopup, setShowEditStockPopup] = useState(false); // State to control the edit popup visibility
-  const[showDeleteStockPopup, setShowDeleteStockPopup] = useState(false); // State to control the delete popup visibility
+  const [showDeleteStockPopup, setShowDeleteStockPopup] = useState(false); // State to control the delete popup visibility
 
   useEffect(() => {
     if (selectedStockType) {
@@ -59,8 +67,6 @@ const StockTable = () => {
     const selectedType = e.target.value;
     setSelectedStockType(selectedType);
     setSelectedItem({});
-   
-    
   };
 
   const handleEdit = (item) => {
@@ -74,10 +80,8 @@ const StockTable = () => {
   };
 
   const handleDelete = (item) => {
-    
     setSelectedItem(item);
     setShowDeleteStockPopup(true);
-
   };
 
   const handleAddStock = () => {
@@ -145,21 +149,21 @@ const StockTable = () => {
       case "medicine":
         return (
           <>
-            <td className="py-4 px-6">{item.brand}</td>
-            <td className="py-4 px-12">{item.quantity}</td>
-            <td className="py-4 px-6">{item.price}</td>
-            <td className="py-4 px-10">{item.date_of_purchase}</td>
+            <td className="py-4 px-6 text-center">{item.brand}</td>
+            <td className="py-4 px-12 text-center">{item.quantity}</td>
+            <td className="py-4 px-6 text-center">{item.price}</td>
+            <td className="py-4 px-10 text-center">{item.date_of_purchase}</td>
             {selectedStockType === "medicine" && (
-              <td className="py-4 px-8">{item.date_of_expiry}</td>
+              <td className="py-4 px-8 text-center">{item.date_of_expiry}</td>
             )}
           </>
         );
       case "other":
         return (
           <>
-            <td className="py-4 px-12">{item.quantity}</td>
-            <td className="py-4 px-6">{item.price}</td>
-            <td className="py-4 px-8">{item.date_of_purchase}</td>
+            <td className="py-4 px-12 text-center">{item.quantity}</td>
+            <td className="py-4 px-6 text-center">{item.price}</td>
+            <td className="py-4 px-8 text-center">{item.date_of_purchase}</td>
           </>
         );
       default:
@@ -202,12 +206,22 @@ const StockTable = () => {
             ))}
           </select>
         </div>
-        <button
-          className="flex items-center bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
-          onClick={handleAddStock}
-        >
-          <FiPlus className="mr-2" /> Add Stock
-        </button>
+        <div className="flex gap-2">
+          <CSVLink
+            data={items}
+            filename={selectedStockType + ".csv"}
+            className="flex items-center text-yellow px-4 py-2 rounded-md"
+            target="_blank"
+          >
+            <FiDownload className="mr-2" />
+          </CSVLink>
+          <button
+            className="flex items-center bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+            onClick={handleAddStock}
+          >
+            <FiPlus className="mr-2" /> Add Stock
+          </button>
+        </div>
       </div>
       {selectedStockType && (
         <div className="overflow-hidden overflow-y-auto max-h-[calc(100vh-250px)]">
@@ -215,43 +229,43 @@ const StockTable = () => {
             <thead className="bg-gray-50 sticky top-0 z-10 border-solid">
               <tr>
                 <th
-                  className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal"
+                  className="py-4 px-6 bg-gray-100 text-center uppercase text-sm leading-normal"
                   onClick={() => handleSort("name")}
                 >
-                  Item {renderSortIcon("name")}
+                  Item
                 </th>
                 {selectedStockType !== "other" && (
                   <th
-                    className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal"
+                    className="py-4 px-6 bg-gray-100 text-center uppercase text-sm leading-normal"
                     onClick={() => handleSort("brand")}
                   >
-                    Brand {renderSortIcon("brand")}
+                    Brand
                   </th>
                 )}
                 <th
-                  className="py-4 px-12 bg-gray-100 text-left uppercase text-sm leading-normal"
+                  className="py-4 px-12 bg-gray-100 text-center uppercase text-sm leading-normal"
                   onClick={() => handleSort("quantity")}
                 >
-                  Quantity {renderSortIcon("quantity")}
+                  Quantity
                 </th>
                 <th
-                  className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal"
+                  className="py-4 px-6 bg-gray-100 text-center uppercase text-sm leading-normal"
                   onClick={() => handleSort("price")}
                 >
-                  Price {renderSortIcon("price")}
+                  Price
                 </th>
                 <th
-                  className="py-4 px-10 bg-gray-100 text-left uppercase text-sm leading-normal"
+                  className="py-4 px-10 bg-gray-100 text-center uppercase text-sm leading-normal"
                   onClick={() => handleSort("date_of_purchase")}
                 >
-                  Date of Purchase {renderSortIcon("date_of_purchase")}
+                  Date of Purchase
                 </th>
                 {selectedStockType === "medicine" && (
                   <th
-                    className="py-4 px-8 bg-gray-100 text-left uppercase text-sm leading-normal"
+                    className="py-4 px-8 bg-gray-100 text-center uppercase text-sm leading-normal"
                     onClick={() => handleSort("date_of_expiry")}
                   >
-                    Date of Expiry {renderSortIcon("date_of_expiry")}
+                    Date of Expiry
                   </th>
                 )}
                 <th className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal">
@@ -262,7 +276,7 @@ const StockTable = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {currentItems.map((item) => (
                 <tr key={item.id}>
-                  <td className="py-4 px-6">{item.name}</td>
+                  <td className="py-4 px-6 text-center">{item.name}</td>
                   {renderAttributes(item)}
                   <td className="py-4 px-6">
                     <div className="flex space-x-4">
@@ -343,7 +357,6 @@ const StockTable = () => {
       )}
       {showAddStockPopup && (
         <AddStockPopup
-        
           onClose={() => setShowAddStockPopup(false)}
           onCreate={handleAddSuccess}
         />
@@ -356,19 +369,17 @@ const StockTable = () => {
           onUpdate={handleUpdate}
         />
       )}
-      {
-        showDeleteStockPopup && (
-          <DeleteStockConfirmation
-            item={selectedItem}
-            stockType={selectedStockType}
-            onClose={() => setShowDeleteStockPopup(false)}
-            onStockDeleted={() => {
-              fetchItems(selectedStockType);
-              setShowDeleteStockPopup(false);
-            }}
-          />
-        )
-      }
+      {showDeleteStockPopup && (
+        <DeleteStockConfirmation
+          item={selectedItem}
+          stockType={selectedStockType}
+          onClose={() => setShowDeleteStockPopup(false)}
+          onStockDeleted={() => {
+            fetchItems(selectedStockType);
+            setShowDeleteStockPopup(false);
+          }}
+        />
+      )}
     </div>
   );
 };

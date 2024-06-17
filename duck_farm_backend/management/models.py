@@ -36,7 +36,7 @@ class Expense(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
     exp_type = models.CharField(max_length=100, choices=EXPENSE_TYPES)
-    dealer = models.ForeignKey(Dealer, related_name='expenses', on_delete=models.CASCADE)
+    dealer = models.ForeignKey(Dealer, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.get_exp_type_display()} - {self.amount}"

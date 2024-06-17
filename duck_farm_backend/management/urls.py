@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 router = DefaultRouter()
 router.register('duck_info', DuckInfoViewSet)
 router.register('dealer_info', DealerViewSet)
-router.register('expanses_info', ExpenseViewSet)
+router.register('expenses', ExpenseViewSet)
 router.register('egg_stock', DailyEggCollectionViewSet)
 
 stock_router = DefaultRouter()

@@ -34,9 +34,10 @@ class DealerSerializer(serializers.ModelSerializer):
 
 
 class ExpenseSerializer(serializers.ModelSerializer):
+    dealer = DealerSerializer()
     class Meta:
         model = Expense
-        fields = '__all__'
+        fields = ['id','dealer','amount','date','exp_type','description']
 
 
 class FeedStockSerializer(serializers.ModelSerializer):

@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { CSVLink } from "react-csv";
 import AddDealerForm from "./AddDealerForm";
 import EditDealerForm from "./EditDealerForm";
 import DeleteDealerConfirmation from "./DeleteDealerConfirmation";
-import {
-  FiEdit,
-  FiTrash,
-  FiPlus,
- 
-} from "react-icons/fi";
+import { FiEdit, FiTrash, FiPlus, FiDownload } from "react-icons/fi";
 
 const DealerInfo = () => {
   const [dealers, setDealers] = useState([]);
@@ -109,13 +105,22 @@ const DealerInfo = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-       
-        <button
-          className="flex items-center bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
-          onClick={handleAddDealer}
-        >
-          <FiPlus className="mr-2" /> Add Dealer
-        </button>
+        <div className="flex gap-2">
+          <CSVLink
+            data={dealers}
+            filename={"dealers.csv"}
+            className="flex items-center text-yellow px-4 py-2 rounded-md"
+            target="_blank"
+          >
+            <FiDownload className="mr-2" />
+          </CSVLink>
+          <button
+            className="flex items-center bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+            onClick={handleAddDealer}
+          >
+            <FiPlus className="mr-2" /> Add Dealer
+          </button>
+        </div>
       </div>
       <div className="overflow-hidden overflow-y-auto max-h-[calc(100vh-250px)]">
         <table className="w-full divide-y divide-gray-300">
@@ -127,7 +132,7 @@ const DealerInfo = () => {
               >
                 Name
               </th>
-              
+
               <th
                 scope="col"
                 className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal"
@@ -163,8 +168,8 @@ const DealerInfo = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {currentDealers.map((dealer) => (
               <tr key={dealer.id}>
-                <td className="px-6 py-4">{dealer.name}</td>               
-                <td className="px-6 py-4">{dealer.address}</td>
+                <td className="px-6 py-4 w-72">{dealer.name}</td>
+                <td className="px-6 py-4 w-72">{dealer.address}</td>
                 <td className="px-6 py-4">{dealer.email}</td>
                 <td className="px-6 py-4">{dealer.phone_number}</td>
                 <td className="px-6 py-4">{dealer.dealer_type}</td>
