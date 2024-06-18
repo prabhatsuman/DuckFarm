@@ -98,3 +98,5 @@ class DailyEggCollection(models.Model):
             egg_stock.total_stock += self.quantity
             egg_stock.save()
         super().save(*args, **kwargs)
+        
+    

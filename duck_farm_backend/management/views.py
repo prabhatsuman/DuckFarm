@@ -346,3 +346,13 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
         egg_stock, created = EggStock.objects.get_or_create(id=1)
         serializer = EggStockSerializer(egg_stock)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['GET'])
+    def by_date(self, request):
+        date_param = request.query_params.get('date')
+        if date_param:
+            queryset = DailyEggCollection.objects.filter(date=date_param)
+            serializer = DailyEggCollectionSerializer(queryset, many=True)
+            return Response(serializer.data)
+        else:
+            return Response([])  # Return empty list if no date parameter is provided

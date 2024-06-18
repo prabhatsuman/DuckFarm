@@ -1,5 +1,6 @@
 import React from 'react';
 import DuckCard from './DuckCard';
+import EggCard from './EggCard';
 
 
 const Home = () => {
@@ -13,12 +14,7 @@ const Home = () => {
                
 
                 {/* Card 2 */}
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                    <div className="px-4 py-5 sm:p-6">
-                        <h3 className="text-lg font-medium text-gray-900">Card 2</h3>
-                        <p className="mt-2 text-sm text-gray-500">Content of card 2 goes here.</p>
-                    </div>
-                </div>
+                <EggCard logoUrl="/images/egg_logo.png" />
 
                 {/* Card 3 */}
                 <div className="bg-white overflow-hidden shadow rounded-lg">

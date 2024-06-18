@@ -82,7 +82,7 @@ const DuckCard = ({ logoUrl }) => {
                         {!hovered ? (
                             <div>
                                 <h3 className="text-lg font-medium text-gray-900">Total Ducks</h3>
-                                <p className="mt-2 text-sm text-gray-500">{totalDucks} ducks</p>
+                                <p className="mt-2 text-sm text-gray-500 text-right">{totalDucks} ducks</p>
                             </div>
                         ) : (
                             <div className="flex items-center mt-4">
