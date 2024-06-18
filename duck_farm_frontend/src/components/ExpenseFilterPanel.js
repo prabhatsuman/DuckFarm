@@ -7,7 +7,9 @@ const ExpenseFilterPanel = ({ expenses, filteredExpenses, setFilteredExpenses, f
   const [expenseType, setExpenseType] = useState("");
   const [minAmount, setMinAmount] = useState("");
   const [maxAmount, setMaxAmount] = useState("");
+  const [selectedDealer, setSelectedDealer] = useState("");
   const [expenseTypesList, setExpenseTypesList] = useState([]);
+  const [dealersList, setDealersList] = useState([]);
 
   useEffect(() => {
     // Fetch expense types from expenses data and update the list
@@ -18,11 +20,20 @@ const ExpenseFilterPanel = ({ expenses, filteredExpenses, setFilteredExpenses, f
       return acc;
     }, []);
     setExpenseTypesList(types);
+
+    // Fetch dealers from expenses data and update the list
+    const dealers = expenses.reduce((acc, expense) => {
+      if (expense.dealer && !acc.includes(expense.dealer.name)) {
+        acc.push(expense.dealer.name);
+      }
+      return acc;
+    }, []);
+    setDealersList(dealers);
   }, [expenses]);
 
   useEffect(() => {
     filterExpenses();
-  }, [searchTerm, startDate, endDate, expenseType, minAmount, maxAmount]);
+  }, [searchTerm, startDate, endDate, expenseType, minAmount, maxAmount, selectedDealer]);
 
   const filterExpenses = () => {
     let filteredData = expenses.filter((expense) => {
@@ -36,12 +47,15 @@ const ExpenseFilterPanel = ({ expenses, filteredExpenses, setFilteredExpenses, f
       // Filter by expense type
       const matchesExpenseType = !expenseType || expense.exp_type.toLowerCase() === expenseType.toLowerCase();
 
+      // Filter by dealer
+      const matchesDealer = !selectedDealer || (expense.dealer && expense.dealer.name === selectedDealer);
+
       // Filter by amount range
       const expenseAmount = parseFloat(expense.amount);
       const isWithinAmountRange = (!minAmount || expenseAmount >= parseFloat(minAmount)) &&
                                   (!maxAmount || expenseAmount <= parseFloat(maxAmount));
 
-      return matchesSearchTerm && isWithinDateRange && matchesExpenseType && isWithinAmountRange;
+      return matchesSearchTerm && isWithinDateRange && matchesExpenseType && matchesDealer && isWithinAmountRange;
     });
 
     setFilteredExpenses(filteredData);
@@ -71,6 +85,10 @@ const ExpenseFilterPanel = ({ expenses, filteredExpenses, setFilteredExpenses, f
     setMaxAmount(e.target.value);
   };
 
+  const handleDealerChange = (e) => {
+    setSelectedDealer(e.target.value);
+  };
+
   const clearFilters = () => {
     setSearchTerm("");
     setStartDate(null);
@@ -78,6 +96,7 @@ const ExpenseFilterPanel = ({ expenses, filteredExpenses, setFilteredExpenses, f
     setExpenseType("");
     setMinAmount("");
     setMaxAmount("");
+    setSelectedDealer("");
     fetchExpenses(); // Reload all expenses
   };
 
@@ -126,6 +145,21 @@ const ExpenseFilterPanel = ({ expenses, filteredExpenses, setFilteredExpenses, f
           {expenseTypesList.map((type, index) => (
             <option key={index} value={type}>
               {type}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Dealer</label>
+        <select
+          value={selectedDealer}
+          onChange={handleDealerChange}
+          className="px-3 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="">Select Dealer</option>
+          {dealersList.map((dealer, index) => (
+            <option key={index} value={dealer}>
+              {dealer}
             </option>
           ))}
         </select>

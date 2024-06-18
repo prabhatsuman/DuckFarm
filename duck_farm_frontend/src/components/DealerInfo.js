@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { CSVLink } from "react-csv";
+import * as XLSX from "xlsx";
 import AddDealerForm from "./AddDealerForm";
 import EditDealerForm from "./EditDealerForm";
 import DeleteDealerConfirmation from "./DeleteDealerConfirmation";
@@ -95,6 +95,42 @@ const DealerInfo = () => {
     fetchDealers();
   };
 
+  const handleDownloadExcel = () => {
+    const data = [
+      // Headers
+      ["Name", "Address", "Email", "Phone Number", "Type"],
+      // Data rows
+      ...dealers.map((dealer) => [
+        dealer.name,
+        dealer.address,
+        dealer.email,
+        dealer.phone_number,
+        dealer.dealer_type,
+      ]),
+    ];
+
+    // Generate current date and time for file name
+    const currentDate = new Date()
+      .toLocaleString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+      .replace(/[/:]/g, "-"); // Replace slashes and colons to ensure valid file name
+
+    const fileName = `dealers-${currentDate}.xlsx`;
+
+    // Create a new workbook and worksheet
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Dealers");
+
+    // Save the file
+    XLSX.writeFile(workbook, fileName);
+  };
   return (
     <div className="m-auto w-full max-h-screen flex flex-col">
       <div className="flex items-center mb-4 justify-between">
@@ -106,14 +142,12 @@ const DealerInfo = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <div className="flex gap-2">
-          <CSVLink
-            data={dealers}
-            filename={"dealers.csv"}
-            className="flex items-center text-yellow px-4 py-2 rounded-md"
-            target="_blank"
+          <button
+            onClick={handleDownloadExcel}
+            className="flex items-center bg-blue-300 text-black px-4 py-2 rounded-md"
           >
-            <FiDownload className="mr-2" />
-          </CSVLink>
+            <FiDownload className="mr-2" /> Download Excel
+          </button>
           <button
             className="flex items-center bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
             onClick={handleAddDealer}

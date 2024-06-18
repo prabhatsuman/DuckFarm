@@ -30,13 +30,14 @@ class Expense(models.Model):
         ('feed', 'Feed'),
         ('medicine', 'Medicine'),
         ('other_stocks', 'Other Stocks'),
+        ('others', 'Others')
     ]
 
     date = models.DateField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
     exp_type = models.CharField(max_length=100, choices=EXPENSE_TYPES)
-    dealer = models.ForeignKey(Dealer, on_delete=models.CASCADE)
+    dealer = models.ForeignKey(Dealer, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"{self.get_exp_type_display()} - {self.amount}"

@@ -39,7 +39,13 @@ class ExpenseSerializer(serializers.ModelSerializer):
         model = Expense
         fields = ['id','dealer','amount','date','exp_type','description']
 
-
+class ExpenseAddSerializer(serializers.ModelSerializer):
+    dealer = serializers.PrimaryKeyRelatedField(queryset=Dealer.objects.all(), required=False, allow_null=True)
+    
+    class Meta:
+        model = Expense
+        fields = ['date', 'amount', 'description', 'exp_type', 'dealer']
+   
 class FeedStockSerializer(serializers.ModelSerializer):
     class Meta:
         model = FeedStock

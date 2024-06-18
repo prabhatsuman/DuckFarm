@@ -21,7 +21,8 @@ from .serializers import (
     DuckBuySerializer,
     FeedBuySerializer,
     MedicineBuySerializer,
-    OtherBuySerializer
+    OtherBuySerializer,
+    ExpenseAddSerializer
 
 )
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -129,8 +130,65 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
     permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.action == 'create' or self.action == 'update':
+            return ExpenseAddSerializer
+        return ExpenseSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
 
+        dealer = validated_data.get('dealer', None)  # Handle case where dealer may not be provided
+        amount = validated_data['amount']
+        date = validated_data['date']
+        exp_type = validated_data['exp_type']
+        description = validated_data.get('description', None)
+
+        try:
+            # Create a new instance
+            expense = Expense.objects.create(
+                dealer=dealer,
+                amount=amount,
+                date=date,
+                exp_type=exp_type,
+                description=description
+            )
+
+            response_serializer = ExpenseSerializer(expense)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        dealer = validated_data.get('dealer', None)  # Handle case where dealer may not be provided
+        amount = validated_data['amount']
+        date = validated_data['date']
+        exp_type = validated_data['exp_type']
+        description = validated_data.get('description', None)
+
+        try:
+            # Update the instance
+            instance.dealer = dealer
+            instance.amount = amount
+            instance.date = date
+            instance.exp_type = exp_type
+            instance.description = description
+            instance.save()
+
+            response_serializer = ExpenseSerializer(instance)
+            return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 class FeedStockViewSet(viewsets.ModelViewSet):
     queryset = FeedStock.objects.all()
     serializer_class = FeedStockSerializer

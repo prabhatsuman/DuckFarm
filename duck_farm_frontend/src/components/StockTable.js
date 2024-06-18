@@ -1,16 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {
-  FiEdit,
-  FiTrash,
-  FiPlus,
-  FiChevronUp,
-  FiChevronDown,
-  FiDownload,
-} from "react-icons/fi";
+import { FiEdit, FiTrash, FiPlus, FiDownload } from "react-icons/fi";
 import AddStockPopup from "./AddStockPopup"; // Adjust the import path as per your folder structure
 import EditStockPopup from "./EditStockPopup"; // Import the EditStockPopup component
 import DeleteStockConfirmation from "./DeleteStockConfirmations"; // Import the DeleteStockConfirmation component
-import { CSVLink } from "react-csv";
+import * as XLSX from "xlsx";
 
 const StockTable = () => {
   const stockTypes = ["feed", "medicine", "other"];
@@ -142,6 +135,51 @@ const StockTable = () => {
       setCurrentPage(pageNumber);
     }
   };
+  const handleDownloadExcel = () => {
+    // Prepare the data for the Excel file
+    const data = [
+      // Headers
+      [
+        "Item Name",
+        selectedStockType !== "other" ? "Brand" : "",
+        "Quantity",
+        "Price",
+        "Date of Purchase",
+        selectedStockType === "medicine" ? "Date of Expiry" : "",
+      ],
+      // Data rows
+      ...sortedItems.map((item) => [
+        item.name,
+        selectedStockType !== "other" ? item.brand : "",
+        item.quantity,
+        item.price,
+        item.date_of_purchase,
+        selectedStockType === "medicine" ? item.date_of_expiry : "",
+      ]),
+    ];
+
+    // Create a new workbook and worksheet
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Stocks");
+
+    // Generate current date and time for file name
+    const currentDate = new Date()
+      .toLocaleString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+      .replace(/[/:]/g, "-"); // Replace slashes and colons to ensure valid file name
+
+    const fileName = `stocks-${selectedStockType}-${currentDate}.xlsx`;
+
+    // Write the workbook to a file
+    XLSX.writeFile(workbook, fileName);
+  };
 
   const renderAttributes = (item) => {
     switch (selectedStockType) {
@@ -173,7 +211,7 @@ const StockTable = () => {
 
   const renderSortIcon = (column) => {
     if (sortBy === column) {
-      return sortOrder === "asc" ? <FiChevronUp /> : <FiChevronDown />;
+      return <span className="ml-1">{sortOrder === "asc" ? "↑" : "↓"}</span>;
     }
     return null;
   };
@@ -207,14 +245,12 @@ const StockTable = () => {
           </select>
         </div>
         <div className="flex gap-2">
-          <CSVLink
-            data={items}
-            filename={selectedStockType + ".csv"}
-            className="flex items-center text-yellow px-4 py-2 rounded-md"
-            target="_blank"
+          <button
+            onClick={handleDownloadExcel}
+            className="flex items-center bg-blue-300 text-black px-4 py-2 rounded-md"
           >
-            <FiDownload className="mr-2" />
-          </CSVLink>
+            <FiDownload className="mr-2" /> Download Excel
+          </button>
           <button
             className="flex items-center bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
             onClick={handleAddStock}
@@ -232,40 +268,40 @@ const StockTable = () => {
                   className="py-4 px-6 bg-gray-100 text-center uppercase text-sm leading-normal"
                   onClick={() => handleSort("name")}
                 >
-                  Item
+                  Item {renderSortIcon("name")}
                 </th>
                 {selectedStockType !== "other" && (
                   <th
                     className="py-4 px-6 bg-gray-100 text-center uppercase text-sm leading-normal"
                     onClick={() => handleSort("brand")}
                   >
-                    Brand
+                    Brand {renderSortIcon("brand")}
                   </th>
                 )}
                 <th
                   className="py-4 px-12 bg-gray-100 text-center uppercase text-sm leading-normal"
                   onClick={() => handleSort("quantity")}
                 >
-                  Quantity
+                  Quantity {renderSortIcon("quantity")}
                 </th>
                 <th
                   className="py-4 px-6 bg-gray-100 text-center uppercase text-sm leading-normal"
                   onClick={() => handleSort("price")}
                 >
-                  Price
+                  Price {renderSortIcon("price")}
                 </th>
                 <th
                   className="py-4 px-10 bg-gray-100 text-center uppercase text-sm leading-normal"
                   onClick={() => handleSort("date_of_purchase")}
                 >
-                  Date of Purchase
+                  Date of Purchase {renderSortIcon("date_of_purchase")}
                 </th>
                 {selectedStockType === "medicine" && (
                   <th
                     className="py-4 px-8 bg-gray-100 text-center uppercase text-sm leading-normal"
                     onClick={() => handleSort("date_of_expiry")}
                   >
-                    Date of Expiry
+                    Date of Expiry {renderSortIcon("date_of_expiry")}
                   </th>
                 )}
                 <th className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal">
