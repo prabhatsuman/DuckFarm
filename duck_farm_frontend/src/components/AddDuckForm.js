@@ -1,4 +1,5 @@
- import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { getTodayDate } from "../utils/getTodayDate";
 
 const AddDuckForm = ({ onClose, onDuckAdded }) => {
   const [formData, setFormData] = useState({
@@ -173,6 +174,7 @@ const AddDuckForm = ({ onClose, onDuckAdded }) => {
               name="purchase_date"
               value={formData.purchase_date}
               onChange={handleChange}
+              max={getTodayDate()}
               className="w-full px-4 py-2 border rounded-md"
               required
             />

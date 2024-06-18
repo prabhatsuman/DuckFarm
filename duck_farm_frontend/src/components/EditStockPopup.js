@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getTodayDate } from '../utils/getTodayDate';
 
 const EditStockPopup = ({ item, stockType, onClose, onUpdate }) => {
   const [formData, setFormData] = useState({ ...item });
@@ -82,6 +83,7 @@ const EditStockPopup = ({ item, stockType, onClose, onUpdate }) => {
                 name="date_of_purchase"
                 value={formData.date_of_purchase || ''}
                 onChange={handleChange}
+                max={getTodayDate()}
                 className="w-full px-4 py-2 border rounded-md"
                 required
               />
@@ -132,6 +134,7 @@ const EditStockPopup = ({ item, stockType, onClose, onUpdate }) => {
                 type="date"
                 name="date_of_purchase"
                 value={formData.date_of_purchase || ''}
+                max={getTodayDate()}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border rounded-md"
                 required

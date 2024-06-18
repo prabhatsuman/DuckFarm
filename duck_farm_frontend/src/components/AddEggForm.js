@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { getTodayDate } from '../utils/getTodayDate';
+
 
 const AddEggForm = ({ onClose, onEggAdded }) => {
   const [formData, setFormData] = useState({
     date: '',
-    egg_count: '',
+    quantity: '',
   });
   const [isConfirming, setIsConfirming] = useState(false);
   const [existingEntry, setExistingEntry] = useState(false);
@@ -81,7 +83,7 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
           <div>
             <h2 className="text-xl font-bold mb-4">Confirm Egg Collection</h2>
             <p className="mb-4">Date: {formData.date}</p>
-            <p className="mb-4">Egg Count: {formData.egg_count}</p>
+            <p className="mb-4">Egg Count: {formData.quantity}</p>
             <div className="flex justify-end space-x-2">
               <button
                 type="button"
@@ -112,6 +114,7 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
                 className="w-full px-4 py-2 border rounded-md"
                 required
                 disabled={existingEntry}
+                max={getTodayDate()}
               />
               {existingEntry && (
                 <div className="mt-2">
@@ -130,8 +133,8 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
               <label className="block text-gray-700">Egg Count</label>
               <input
                 type="number"
-                name="egg_count"
-                value={formData.egg_count}
+                name="quantity"
+                value={formData.quantity}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border rounded-md"
                 required
