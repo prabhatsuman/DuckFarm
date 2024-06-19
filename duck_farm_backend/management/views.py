@@ -1,5 +1,5 @@
 # management/views.py
-from django.db.models import Sum,F
+from django.db.models import Sum, F
 from rest_framework import viewsets, generics, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -8,6 +8,11 @@ from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from .models import DuckInfo, Dealer, Expense, Stock, FeedStock, MedicineStock, OtherStock, EggStock, DailyEggCollection
+from datetime import timedelta, date, datetime
+from .utils import daterange
+from rest_framework.pagination import PageNumberPagination
+from django.core.cache import cache
+
 from .serializers import (
     DuckInfoSerializer,
     DealerSerializer,
@@ -22,8 +27,8 @@ from .serializers import (
     FeedBuySerializer,
     MedicineBuySerializer,
     OtherBuySerializer,
-    ExpenseAddSerializer
-
+    ExpenseAddSerializer,
+    DailyEggStockChartSerializer
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -67,8 +72,10 @@ class DuckInfoViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='total', permission_classes=[IsAuthenticated])
     def total_ducks(self, request):
-        total_male = DuckInfo.objects.aggregate(Sum('male_count'))['male_count__sum'] or 0
-        total_female = DuckInfo.objects.aggregate(Sum('female_count'))['female_count__sum'] or 0
+        total_male = DuckInfo.objects.aggregate(Sum('male_count'))[
+            'male_count__sum'] or 0
+        total_female = DuckInfo.objects.aggregate(Sum('female_count'))[
+            'female_count__sum'] or 0
         total = total_male + total_female
         return Response({'total': total})
 
@@ -120,6 +127,8 @@ class DuckInfoViewSet(viewsets.ModelViewSet):
 
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class DealerViewSet(viewsets.ModelViewSet):
     queryset = Dealer.objects.all()
     serializer_class = DealerSerializer
@@ -130,7 +139,7 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_serializer_class(self):
         if self.action == 'create' or self.action == 'update':
             return ExpenseAddSerializer
@@ -141,7 +150,8 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
-        dealer = validated_data.get('dealer', None)  # Handle case where dealer may not be provided
+        # Handle case where dealer may not be provided
+        dealer = validated_data.get('dealer', None)
         amount = validated_data['amount']
         date = validated_data['date']
         exp_type = validated_data['exp_type']
@@ -169,7 +179,8 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
-        dealer = validated_data.get('dealer', None)  # Handle case where dealer may not be provided
+        # Handle case where dealer may not be provided
+        dealer = validated_data.get('dealer', None)
         amount = validated_data['amount']
         date = validated_data['date']
         exp_type = validated_data['exp_type']
@@ -189,11 +200,13 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class FeedStockViewSet(viewsets.ModelViewSet):
     queryset = FeedStock.objects.all()
     serializer_class = FeedStockSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def create(self, request, *args, **kwargs):
         serializer = FeedBuySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -242,7 +255,7 @@ class MedicineStockViewSet(viewsets.ModelViewSet):
     queryset = MedicineStock.objects.all()
     serializer_class = MedicineStockSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def create(self, request, *args, **kwargs):
         serializer = MedicineBuySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -293,7 +306,7 @@ class OtherStockViewSet(viewsets.ModelViewSet):
     queryset = OtherStock.objects.all()
     serializer_class = OtherStockSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def create(self, request, *args, **kwargs):
         serializer = OtherBuySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -336,17 +349,50 @@ class OtherStockViewSet(viewsets.ModelViewSet):
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class DailyEggCollectionPagination(PageNumberPagination):
+    page_size = 7  # Number of items per page
+
+    def paginate_queryset(self, data, request, view=None):
+        self.page_size = self.get_page_size(request)
+        return super().paginate_queryset(data, request, view)
+
+    def get_paginated_response(self, data):
+        page = self.page       
+
+        # Calculate start and end date for the current page
+        start_date = data[0]['date'] if data else None
+        end_date = data[-1]['date'] if data else None
+        return Response({
+            'count': (self.page.paginator.count+6)//7,
+            #date range of the current page
+            'page': page.number,
+            'date_range':{
+                'start': start_date,
+                'end': end_date
+            },
+            'results': data,
+            # date range per page
+
+        })
+
+
 class DailyEggCollectionViewSet(viewsets.ModelViewSet):
     queryset = DailyEggCollection.objects.all()
     serializer_class = DailyEggCollectionSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = DailyEggCollectionPagination
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset().order_by('date')  # Order queryset by 'date'
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['get'], url_path='total_stock', permission_classes=[IsAuthenticated])
     def total_stock(self, request):
         egg_stock, created = EggStock.objects.get_or_create(id=1)
         serializer = EggStockSerializer(egg_stock)
         return Response(serializer.data)
-    
+
     @action(detail=False, methods=['GET'])
     def by_date(self, request):
         date_param = request.query_params.get('date')
@@ -355,4 +401,39 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
             serializer = DailyEggCollectionSerializer(queryset, many=True)
             return Response(serializer.data)
         else:
-            return Response([])  # Return empty list if no date parameter is provided
+            # Return empty list if no date parameter is provided
+            return Response([])
+    @action(detail=False, methods=['get'], url_path='daily_view', permission_classes=[IsAuthenticated])
+    def daily_view(self, request):
+        cache_key = 'daily_egg_collection_data'
+        cached_data = cache.get(cache_key)
+
+        if cached_data:           
+            data = cached_data
+        else:           
+            queryset = self.queryset.order_by('date')
+            first_date = queryset.first().date
+            last_date = queryset.last().date
+
+            first_date -= timedelta(days=first_date.weekday())
+            last_date += timedelta(days=(6 - last_date.weekday()))
+
+            data = []
+            day_list = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            for single_date in daterange(first_date, last_date):
+                date_data = queryset.filter(date=single_date)
+                eggs = date_data.first().quantity if date_data.exists() else 0
+                data.append({
+                    'day': day_list[single_date.weekday()],
+                    'date': single_date,
+                    'eggs': eggs
+                })
+
+            cache.set(cache_key, data, timeout=60*60)  # Cache for 1 hour
+
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(data, request)
+        if page is not None:
+            return paginator.get_paginated_response(page)
+
+        return Response(data)

@@ -120,3 +120,9 @@ class DailyEggCollectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = DailyEggCollection
         fields = '__all__'
+
+
+class DailyEggStockChartSerializer(serializers.Serializer):
+    day= serializers.CharField(max_length=100)
+    date=serializers.DateField()
+    eggs=serializers.IntegerField()
