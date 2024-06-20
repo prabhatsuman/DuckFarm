@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -49,17 +50,18 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+
 }
-from datetime import timedelta
 
 SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=120),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
 
-    
+
 }
 
 
@@ -107,8 +109,8 @@ DATABASES = {
         'NAME': 'farmmanagement',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': 'localhost',  
-        'PORT': '5432', 
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 CACHES = {
@@ -141,7 +143,6 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # Default backend
     'management.authentication.EmailBackend',  # Custom email backend
 ]
-
 
 
 # Internationalization

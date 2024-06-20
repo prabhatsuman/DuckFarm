@@ -1,7 +1,7 @@
 # management/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import DuckInfo, Dealer, Expense, FeedStock, MedicineStock, OtherStock, EggStock, DailyEggCollection
+from .models import DuckInfo, Dealer, Expense, FeedStock, MedicineStock, OtherStock, EggStock, DailyEggCollection, Sales
 from datetime import datetime
 from django.db import models
 
@@ -145,3 +145,11 @@ class MonthlyEggStockChartSerializer(serializers.Serializer):
     year = serializers.CharField(max_length=100)
     month = serializers.CharField(max_length=100)
     eggs = serializers.IntegerField()
+    
+    
+class SalesSerializer(serializers.ModelSerializer):
+    dealer = DealerSerializer()
+
+    class Meta:
+        model = Sales
+        fields = ['id', 'date', 'dealer', 'quantity', 'amount', 'description']

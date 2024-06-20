@@ -231,22 +231,7 @@ const ExpenseTable = () => {
             >
               Previous
             </button>
-            {Array.from(
-              { length: Math.ceil(filteredExpenses.length / expensesPerPage) },
-              (_, index) => (
-                <button
-                  key={index}
-                  onClick={() => paginate(index + 1)}
-                  className={`px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    currentPage === index + 1
-                      ? "bg-indigo-50 border-indigo-500 text-indigo-600 cursor-not-allowed"
-                      : ""
-                  }`}
-                >
-                  {index + 1}
-                </button>
-              )
-            )}
+           
             <button
               onClick={() => paginate(currentPage + 1)}
               disabled={

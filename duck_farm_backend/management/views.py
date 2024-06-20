@@ -7,11 +7,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from .models import DuckInfo, Dealer, Expense, Stock, FeedStock, MedicineStock, OtherStock, EggStock, DailyEggCollection
+from .models import DuckInfo, Dealer, Expense, Stock, FeedStock, MedicineStock, OtherStock, EggStock, DailyEggCollection, Sales
 from datetime import timedelta, date, datetime
 from .utils import daterange
 from rest_framework.pagination import PageNumberPagination
 from django.core.cache import cache
+from django_filters.rest_framework import DjangoFilterBackend
+import django_filters
 
 from .serializers import (
     DuckInfoSerializer,
@@ -29,7 +31,8 @@ from .serializers import (
     OtherBuySerializer,
     ExpenseAddSerializer,
     DailyEggStockChartSerializer,
-    MonthlyEggStockChartSerializer
+    MonthlyEggStockChartSerializer,
+    SalesSerializer
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -507,3 +510,90 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
         cache.delete('daily_egg_collection_data')
         cache.delete('monthly_egg_collection_data')
         return Response({'message':'cache cleared'},status=status.HTTP_200_OK)
+
+class SalesPagination(PageNumberPagination):
+    page_size= 10
+    
+    def paginate_queryset(self,queryset,request,view=None):
+        self.total_amount = queryset.aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+        return super().paginate_queryset(queryset,request,view)
+    
+    def get_paginated_response(self,data):
+       return Response({
+            'count': self.page.paginator.count,
+            'total_pages': self.page.paginator.num_pages,
+            'current_page': self.page.number,
+            'total_amount': self.total_amount,
+            'results': data,
+        })
+class SalesFilter(django_filters.FilterSet):
+    searchTerm = django_filters.CharFilter(field_name='description', lookup_expr='icontains')
+    startDate = django_filters.DateFilter(field_name='date', lookup_expr='gte')
+    endDate = django_filters.DateFilter(field_name='date', lookup_expr='lte')
+    minAmount = django_filters.NumberFilter(field_name='amount', lookup_expr='gte')
+    maxAmount = django_filters.NumberFilter(field_name='amount', lookup_expr='lte')
+    selectedDealer = django_filters.CharFilter(field_name='dealer__name', lookup_expr='exact')
+
+    class Meta:
+        model = Sales
+        fields = ['searchTerm', 'startDate', 'endDate', 'minAmount', 'maxAmount', 'selectedDealer']
+    
+class SalesViewSet(viewsets.ModelViewSet):
+    queryset = Sales.objects.all().order_by('-date') 
+    serializer_class = SalesSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = SalesPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = SalesFilter
+    ordering_fields = ['date', 'amount', 'quantity']
+
+    
+
+    def create(self, request, *args, **kwargs):
+        serializer = SalesSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        date = validated_data['date']
+        dealer = validated_data['dealer']
+        quantity = validated_data['quantity']
+        amount = validated_data['amount']
+        description = validated_data['description']
+
+        try:
+            # Create a new instance
+            sales = Sales.objects.create(
+                date=date,
+                dealer=dealer,
+                quantity=quantity,
+                amount=amount,
+                description=description
+            )
+            #on sucecessful adding of sales, Total egg stock should be decreased by the quantity of eggs sold
+            egg_stock, created = EggStock.objects.get_or_create(id=1)
+            egg_stock.total_stock -= quantity
+            egg_stock.save()
+                        
+
+            response_serializer = SalesSerializer(sales)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    @action(detail=False,methods=['get'],url_path='dealer_list',permission_classes=[IsAuthenticated],serializer_class=DealerSerializer)
+    def dealer_list(self,request):
+       #find all dealers present in sales table
+        dealers = Dealer.objects.filter(sales__isnull=False).distinct()
+        serializer = DealerSerializer(dealers,many=True)
+        return Response(serializer.data)
+    
