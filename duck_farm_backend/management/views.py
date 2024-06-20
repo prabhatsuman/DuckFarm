@@ -502,3 +502,8 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
         if page is not None:
             return paginator.get_paginated_response(page)
         return Response(data)
+    @action(detail=False,methods=['get'],url_path='clear_cache',permission_classes=[IsAuthenticated])
+    def clear_cache(self,request):       
+        cache.delete('daily_egg_collection_data')
+        cache.delete('monthly_egg_collection_data')
+        return Response({'message':'cache cleared'},status=status.HTTP_200_OK)

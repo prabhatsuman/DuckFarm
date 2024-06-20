@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { getTodayDate } from '../utils/getTodayDate';
-
+import React, { useState, useEffect, useCallback } from "react";
+import { getTodayDate } from "../utils/getTodayDate";
+import eventBus from "../utils/eventBus";
 
 const AddEggForm = ({ onClose, onEggAdded }) => {
   const [formData, setFormData] = useState({
-    date: '',
-    quantity: '',
+    date: "",
+    quantity: "",
   });
   const [isConfirming, setIsConfirming] = useState(false);
   const [existingEntry, setExistingEntry] = useState(false);
@@ -13,15 +13,18 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
   const checkExistingEntry = useCallback(async () => {
     if (formData.date) {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/egg_stock/by_date/?date=${formData.date}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-        });
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/egg_stock/by_date/?date=${formData.date}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+          }
+        );
         const data = await response.json();
         setExistingEntry(data.length > 0);
       } catch (error) {
-        console.error('Error checking existing entry:', error);
+        console.error("Error checking existing entry:", error);
       }
     }
   }, [formData.date]);
@@ -37,27 +40,54 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
       [name]: value,
     }));
   };
+  const clearBackendCache = async () => {
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/egg_stock/clear_cache/",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      if (response.ok) {
+        const result = await response.json();
+        console.log(result.message);
+      } else {
+        console.error("Failed to clear cache");
+      }
+    } catch (error) {
+      console.error("Error clearing cache:", error);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isConfirming) {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/egg_stock/', {
-          method: 'POST',
+        const response = await fetch("http://127.0.0.1:8000/api/egg_stock/", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
           body: JSON.stringify(formData),
         });
 
         if (response.ok) {
+          console.log("Eggs added successfully");
+          eventBus.dispatch("newEggDataAdded", { newEggDataAdded: true });
+
+          await clearBackendCache();
+
           onEggAdded();
         } else {
-          console.error('Failed to add eggs');
+          console.error("Failed to add eggs");
         }
       } catch (error) {
-        console.error('Error adding eggs:', error);
+        console.error("Error adding eggs:", error);
       }
     } else {
       setIsConfirming(true);
@@ -71,7 +101,7 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
   const handleChooseAnotherDate = () => {
     setFormData((prevState) => ({
       ...prevState,
-      date: '',
+      date: "",
     }));
     setExistingEntry(false);
   };
@@ -118,7 +148,9 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
               />
               {existingEntry && (
                 <div className="mt-2">
-                  <p className="text-red-500 text-sm">Egg collection for this date already exists.</p>
+                  <p className="text-red-500 text-sm">
+                    Egg collection for this date already exists.
+                  </p>
                   <button
                     type="button"
                     onClick={handleChooseAnotherDate}

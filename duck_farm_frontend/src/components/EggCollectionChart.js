@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
+import eventBus from "../utils/eventBus";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -46,6 +47,20 @@ const EggCollectionChart = () => {
     fetchTotalDailyPages();
     fetchTotalMonthlyPages();
   }, []);
+
+  useEffect(() => {
+    const handleNewEggDataAdded = () => {
+      fetchTotalDailyPages();
+      fetchTotalMonthlyPages();
+    };
+
+    eventBus.on("newEggDataAdded", handleNewEggDataAdded);
+
+    return () => {
+      eventBus.remove("newEggDataAdded", handleNewEggDataAdded);
+    };
+  }, []);
+
   // Only run this effect once when component mounts
   const fetchTotalDailyPages = async () => {
     try {
