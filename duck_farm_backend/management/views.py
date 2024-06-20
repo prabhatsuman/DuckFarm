@@ -28,7 +28,8 @@ from .serializers import (
     MedicineBuySerializer,
     OtherBuySerializer,
     ExpenseAddSerializer,
-    DailyEggStockChartSerializer
+    DailyEggStockChartSerializer,
+    MonthlyEggStockChartSerializer
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -357,18 +358,47 @@ class DailyEggCollectionPagination(PageNumberPagination):
         return super().paginate_queryset(data, request, view)
 
     def get_paginated_response(self, data):
-        page = self.page       
+        page = self.page
 
         # Calculate start and end date for the current page
         start_date = data[0]['date'] if data else None
         end_date = data[-1]['date'] if data else None
         return Response({
             'count': (self.page.paginator.count+6)//7,
-            #date range of the current page
+            # date range of the current page
             'page': page.number,
-            'date_range':{
+            'date_range': {
                 'start': start_date,
                 'end': end_date
+            },
+            'results': data,
+            # date range per page
+
+        })
+
+
+class MonthlyEggCollectionPagination(PageNumberPagination):
+    page_size = 12  # Number of items per page
+
+    def paginate_queryset(self, data, request, view=None):
+        self.page_size = self.get_page_size(request)
+        return super().paginate_queryset(data, request, view)
+
+    def get_paginated_response(self, data):
+        page = self.page
+
+        # Calculate start and end date for the current page
+        start_month = data[0]['month'] if data else None
+        start_year = data[0]['year'] if data else None
+        end_month = data[-1]['month'] if data else None
+        end_year = data[-1]['year'] if data else None
+        return Response({
+            'count': (self.page.paginator.count+11)//12,
+            # date range of the current page
+            'page': page.number,
+            'month_range': {
+                'start': start_month+" "+str(start_year),
+                'end': end_month+" "+str(end_year)
             },
             'results': data,
             # date range per page
@@ -403,23 +433,26 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
         else:
             # Return empty list if no date parameter is provided
             return Response([])
+
     @action(detail=False, methods=['get'], url_path='daily_view', permission_classes=[IsAuthenticated])
     def daily_view(self, request):
         cache_key = 'daily_egg_collection_data'
         cached_data = cache.get(cache_key)
 
-        if cached_data:           
+        if cached_data:
             data = cached_data
-        else:           
+        else:
             queryset = self.queryset.order_by('date')
-            first_date = queryset.first().date
-            last_date = queryset.last().date
+            first_date = queryset.first().date            
+            last_date = date.today()
+            
 
             first_date -= timedelta(days=first_date.weekday())
             last_date += timedelta(days=(6 - last_date.weekday()))
 
             data = []
-            day_list = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            day_list = ['Monday', 'Tuesday', 'Wednesday',
+                        'Thursday', 'Friday', 'Saturday', 'Sunday']
             for single_date in daterange(first_date, last_date):
                 date_data = queryset.filter(date=single_date)
                 eggs = date_data.first().quantity if date_data.exists() else 0
@@ -436,4 +469,36 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
         if page is not None:
             return paginator.get_paginated_response(page)
 
+        return Response(data)
+
+    @action(detail=False, methods=['get'], url_path='monthly_view', permission_classes=[IsAuthenticated])
+    def monthly_view(self, request):
+
+        cache_key = 'monthly_egg_collection_data'
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            data = cached_data
+        else:
+            queryset = self.queryset.order_by('date')
+            first_year = queryset.first().date.year
+            last_year = queryset.last().date.year
+            months = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December']
+            data = []
+            for year in range(first_year, last_year + 1):
+                for month in range(1, 13):
+                    eggs_collected = queryset.filter(date__year=year, date__month=month).aggregate(
+                        total_eggs=Sum('quantity'))['total_eggs'] or 0
+
+                    data.append({
+                        'year': year,
+                        'month': months[month - 1],
+                        'eggs': eggs_collected
+                    })
+            cache.set(cache_key, data, timeout=60*60)
+
+        paginator = MonthlyEggCollectionPagination()
+        page = paginator.paginate_queryset(data, request)
+        if page is not None:
+            return paginator.get_paginated_response(page)
         return Response(data)
