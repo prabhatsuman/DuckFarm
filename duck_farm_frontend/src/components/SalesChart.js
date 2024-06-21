@@ -1,29 +1,28 @@
 import React, { useState, useEffect } from "react";
-import { Line,Bar } from "react-chartjs-2";
+import { Line, Bar } from "react-chartjs-2";
 import eventBus from "../utils/eventBus";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
+  BarElement,
   LineElement,
   Title,
   Tooltip,
   Legend,
 } from "chart.js";
-import { BsBorderWidth } from "react-icons/bs";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  PointElement,
+  BarElement,
   LineElement,
   Title,
   Tooltip,
   Legend
 );
 
-const EggCollectionChart = () => {
+const SalesChart = () => {
   const [dailyData, setDailyData] = useState([]);
   const [dailyPage, setDailyPage] = useState(1);
   const [dailyChartData, setDailyChartData] = useState({
@@ -42,7 +41,7 @@ const EggCollectionChart = () => {
   const [monthlyTotalPages, setMonthlyTotalPages] = useState(1);
   const [monthlyDateRange, setMonthlyDateRange] = useState("");
 
-  const [view, setView] = useState("daily"); 
+  const [view, setView] = useState("daily");
 
   useEffect(() => {
     fetchTotalDailyPages();
@@ -50,23 +49,23 @@ const EggCollectionChart = () => {
   }, []);
 
   useEffect(() => {
-    const handleNewEggDataAdded = () => {
+    const handleNewSalesDataAdded = () => {
       fetchTotalDailyPages();
       fetchTotalMonthlyPages();
     };
 
-    eventBus.on("newEggDataAdded", handleNewEggDataAdded);
+    eventBus.on("newSalesDataAdded", handleNewSalesDataAdded);
 
     return () => {
-      eventBus.remove("newEggDataAdded", handleNewEggDataAdded);
+      eventBus.remove("newSalesDataAdded", handleNewSalesDataAdded);
     };
   }, []);
 
-  // Only run this effect once when component mounts
   const fetchTotalDailyPages = async () => {
     try {
+      // Replace the API endpoint with your actual endpoint for daily view
       const response = await fetch(
-        `http://127.0.0.1:8000/api/egg_stock/daily_view/`,
+        `http://127.0.0.1:8000/api/sales/daily_view/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -77,18 +76,20 @@ const EggCollectionChart = () => {
       setDailyTotalPages(result.count);
 
       setDailyPage(result.count);
-      fetchDailyData(result.count); 
+      fetchDailyData(result.count);
       setDailyDateRange(
         `From ${result.date_range.start} to ${result.date_range.end}`
       );
     } catch (error) {
-      console.error("Error fetching total pages:", error);
+      console.error("Error fetching total daily pages:", error);
     }
   };
+
   const fetchTotalMonthlyPages = async () => {
     try {
+      // Replace the API endpoint with your actual endpoint for monthly view
       const response = await fetch(
-        `http://127.0.0.1:8000/api/egg_stock/monthly_view/`,
+        `http://127.0.0.1:8000/api/sales/monthly_view/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -98,12 +99,12 @@ const EggCollectionChart = () => {
       const result = await response.json();
       setMonthlyTotalPages(result.count);
       setMonthlyPage(result.count);
-      fetchMonthlyData(result.count); 
+      fetchMonthlyData(result.count);
       setMonthlyDateRange(
         `From ${result.date_range.start} to ${result.date_range.end}`
       );
     } catch (error) {
-      console.error("Error fetching total pages:", error);
+      console.error("Error fetching total monthly pages:", error);
     }
   };
 
@@ -113,12 +114,13 @@ const EggCollectionChart = () => {
 
   useEffect(() => {
     fetchMonthlyData(monthlyPage);
-  }, [monthlyPage]); 
+  }, [monthlyPage]);
 
   const fetchDailyData = async (page) => {
     try {
+      // Replace the API endpoint with your actual endpoint for daily view
       const response = await fetch(
-        `http://127.0.0.1:8000/api/egg_stock/daily_view/?page=${page}`,
+        `http://127.0.0.1:8000/api/sales/daily_view/?page=${page}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -138,8 +140,9 @@ const EggCollectionChart = () => {
 
   const fetchMonthlyData = async (page) => {
     try {
+      // Replace the API endpoint with your actual endpoint for monthly view
       const response = await fetch(
-        `http://127.0.0.1:8000/api/egg_stock/monthly_view/?page=${page}`,
+        `http://127.0.0.1:8000/api/sales/monthly_view/?page=${page}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -163,17 +166,16 @@ const EggCollectionChart = () => {
 
   const handleMonthlyPageChange = (page) => {
     setMonthlyPage(page);
-  };  
+  };
 
   useEffect(() => {
     if (dailyData.length > 0) {
-      console.log(dailyData);
       setDailyChartData({
         labels: dailyData.map((item) => item.day),
         datasets: [
           {
-            label: "Daily Egg Collection",
-            data: dailyData.map((item) => item.eggs),
+            label: "Daily Sales",
+            data: dailyData.map((item) => item.sales),
             borderColor: "rgba(75,192,192,1)",
             backgroundColor: "rgba(75,192,192,0.2)",
           },
@@ -190,10 +192,10 @@ const EggCollectionChart = () => {
         labels: monthlyData.map((item) => item.month),
         datasets: [
           {
-            label: "Monthly Egg Collection",
-            data: monthlyData.map((item) => item.eggs),
-            borderColor: "rgba(192,75,192,1)",
+            label: "Monthly Sales",
+            data: monthlyData.map((item) => item.sales),
             backgroundColor: "rgba(192,75,192,0.2)",
+            borderColor: "rgba(192,75,192,1)",
             borderWidth: 1,
           },
         ],
@@ -202,42 +204,45 @@ const EggCollectionChart = () => {
       setMonthlyChartData({ labels: [], datasets: [] });
     }
   }, [monthlyData]);
-  
 
-  const renderChart = () => {
+   const renderChart = () => {
     switch (view) {
       case "daily":
-        return (<Line data={dailyChartData} 
-          options={{
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  title: (tooltipItem) =>
-                      
-                      `${dailyData[tooltipItem[0].dataIndex].date}`,
-                  label: (tooltipItem) =>
-                    `Egg Collection: ${tooltipItem.raw}` 
+        return (
+          <Line
+            data={dailyChartData}
+            options={{
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    title: (tooltipItem) =>
+                        
+                        `${dailyData[tooltipItem[0].dataIndex].date}`,
+                    label: (tooltipItem) =>
+                      `Daily Sales: ₹${tooltipItem.raw.toFixed(2)}` 
+                  },
                 },
               },
-            },
-          }}
-        />
-      );
+            }}
+          />
+        );
       case "monthly":
-        return (<Bar data={monthlyChartData} 
-          options={{
-            plugins: {
-              tooltip: {
-                callbacks: {
-                
-                  label: (tooltipItem) =>
-                    `Monthly Egg Collection: ${tooltipItem.raw}` // Adding ₹ symbol
+        return (
+          <Bar
+            data={monthlyChartData}
+            options={{
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                  
+                    label: (tooltipItem) =>
+                      `Monthly Sales: ₹${tooltipItem.raw.toFixed(2)}` // Adding ₹ symbol
+                  },
                 },
               },
-            },
-          }}
-        />
-      );      
+            }}
+          />
+        );
       default:
         return null;
     }
@@ -258,7 +263,7 @@ const EggCollectionChart = () => {
         totalPages = monthlyTotalPages;
         currentPage = monthlyPage;
         handlePageChange = handleMonthlyPageChange;
-        break;     
+        break;
       default:
         totalPages = 1;
         currentPage = 1;
@@ -292,21 +297,21 @@ const EggCollectionChart = () => {
   };
 
   const handleViewChange = (e) => {
-    setView(e.target.value);    
+    setView(e.target.value);
     switch (e.target.value) {
       case "daily":
         setDailyPage(dailyTotalPages);
         break;
       case "monthly":
         setMonthlyPage(monthlyTotalPages);
-        break;      
+        break;
       default:
         break;
     }
   };
 
   return (
-    <div className="egg-collection-chart-container p-4 bg-white rounded-lg shadow-md">
+    <div className="sales-chart-container p-4 bg-white rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-4">
         <select
           value={view}
@@ -329,4 +334,4 @@ const EggCollectionChart = () => {
   );
 };
 
-export default EggCollectionChart;
+export default SalesChart;

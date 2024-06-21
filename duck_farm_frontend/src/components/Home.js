@@ -2,6 +2,7 @@ import React from "react";
 import DuckCard from "./DuckCard";
 import EggCard from "./EggCard";
 import EggCollectionChart from "./EggCollectionChart";
+import SalesChart from "./SalesChart";
 
 const Home = () => {
   return (
@@ -48,13 +49,7 @@ const Home = () => {
 
         {/* Graph 2 */}
         <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg font-medium text-gray-900">Graph 2</h3>
-            <div className="mt-2 text-sm text-gray-500">
-              {/* Replace this div with your graph component */}
-              <div>Graph 2 content goes here</div>
-            </div>
-          </div>
+          <SalesChart />
         </div>
 
        

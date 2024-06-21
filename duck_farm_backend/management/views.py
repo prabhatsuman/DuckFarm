@@ -14,7 +14,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.core.cache import cache
 from django_filters.rest_framework import DjangoFilterBackend
 import django_filters
-from .pagination import DailyEggCollectionPagination, MonthlyEggCollectionPagination, SalesPagination, ExpensePagination
+from .pagination import DailyEggCollectionPagination, MonthlyEggCollectionPagination, SalesPagination, ExpensePagination,DailySalesPagination,MonthlySalesPagination
 from .filters import SalesFilter, ExpenseFilter
 
 from .serializers import (
@@ -542,4 +542,74 @@ class SalesViewSet(viewsets.ModelViewSet):
         dealers = Dealer.objects.filter(sales__isnull=False).distinct()
         serializer = DealerSerializer(dealers,many=True)
         return Response(serializer.data)
+    
+    @action(detail=False,methods=['get'],url_path='daily_view',permission_classes=[IsAuthenticated])
+    def daily_view(self,request):
+        cache_key = 'daily_sales_data'
+        cached_data = cache.get(cache_key)
+        
+        if cached_data:
+            data = cached_data
+        else:
+            queryset = self.queryset.order_by('date')
+            first_date = queryset.first().date
+            last_date = date.today()
+            first_date -= timedelta(days=first_date.weekday())
+            last_date += timedelta(days=(6 - last_date.weekday()))
+            data = []
+            day_list = ['Monday', 'Tuesday', 'Wednesday',
+                        'Thursday', 'Friday', 'Saturday', 'Sunday']
+            for single_date in daterange(first_date, last_date):
+                date_data = queryset.filter(date=single_date)
+                sales = date_data.first().amount if date_data.exists() else 0
+                data.append({
+                    'day': day_list[single_date.weekday()],
+                    'date': single_date,
+                    'sales': sales
+                })
+                
+            cache.set(cache_key,data,timeout=60*60)
+            
+        paginator = DailySalesPagination()
+        page = paginator.paginate_queryset(data,request)
+        if page is not None:
+            return paginator.get_paginated_response(page)
+        return Response(data)
+    @action(detail=False,methods=['get'],url_path='monthly_view',permission_classes=[IsAuthenticated])
+    def monthly_view(self,request):
+        cache_key = 'monthly_sales_data'
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            data = cached_data
+        else:
+            queryset = self.queryset.order_by('date')
+            first_year = queryset.first().date.year
+            last_year = queryset.last().date.year
+            months = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December']
+            data = []
+            for year in range(first_year, last_year + 1):
+                for month in range(1, 13):
+                    sales = queryset.filter(date__year=year, date__month=month).aggregate(
+                        total_sales=Sum('amount'))['total_sales'] or 0
+
+                    data.append({
+                        'year': year,
+                        'month': months[month - 1],
+                        'sales': sales
+                    })
+            cache.set(cache_key, data, timeout=60*60)
+            
+        paginator = MonthlySalesPagination()
+        page = paginator.paginate_queryset(data,request)
+        if page is not None:
+            return paginator.get_paginated_response(page)
+        return Response(data)
+    
+    @action (detail=False,methods=['get'],url_path='clear_cache',permission_classes=[IsAuthenticated])
+    def clear_cache(self,request):
+        cache.delete('daily_sales_data')
+        cache.delete('monthly_sales_data')
+        return Response({'message':'cache cleared'},status=status.HTTP_200_OK)
+    
     
