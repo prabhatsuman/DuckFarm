@@ -171,18 +171,18 @@ const SalesTable = () => {
       <div className="flex flex-col w-3/4 px-4">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Sales Data</h1>
-          <div className="flex space-x-2">
-            <button
-              onClick={toggleAddSalesModal}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md flex items-center hover:bg-blue-600"
-            >
-              <FiPlus className="mr-2" /> Add Sale
-            </button>
+          <div className="flex space-x-2">            
             <button
               onClick={handleDownloadExcel}
-              className="px-4 py-2 bg-green-500 text-white rounded-md flex items-center hover:bg-green-600"
+              className="flex items-center bg-blue-300 text-black px-4 py-2 rounded-md"
             >
               <FiDownload className="mr-2" /> Download Excel
+            </button>
+            <button
+              onClick={toggleAddSalesModal}
+              className="flex items-center bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+            >
+              <FiPlus className="mr-2" /> Add Sale
             </button>
           </div>
         </div>

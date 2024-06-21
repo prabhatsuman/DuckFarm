@@ -1,109 +1,126 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import _ from 'lodash';
 
-const ExpenseFilterPanel = ({ expenses, filteredExpenses, setFilteredExpenses, fetchExpenses }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [expenseType, setExpenseType] = useState("");
-  const [minAmount, setMinAmount] = useState("");
-  const [maxAmount, setMaxAmount] = useState("");
-  const [selectedDealer, setSelectedDealer] = useState("");
+const ExpenseFilterPanel = ({ onFilterChange, totalAmount }) => {
+  const [filters, setFilters] = useState({
+    searchTerm: "",
+    startDate: null,
+    endDate: null,
+    expenseType: "",
+    minAmount: "",
+    maxAmount: "",
+    selectedDealer: "",
+  });
+
   const [expenseTypesList, setExpenseTypesList] = useState([]);
   const [dealersList, setDealersList] = useState([]);
 
   useEffect(() => {
-    // Fetch expense types from expenses data and update the list
-    const types = expenses.reduce((acc, expense) => {
-      if (expense.exp_type && !acc.includes(expense.exp_type.toLowerCase())) {
-        acc.push(expense.exp_type.toLowerCase());
+    const fetchExpenseTypes = async () => {
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/expenses/expense_types/", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setExpenseTypesList(data);
+        } else {
+          console.error("Failed to fetch expense types");
+        }
+      } catch (error) {
+        console.error("Error fetching expense types:", error);
       }
-      return acc;
-    }, []);
-    setExpenseTypesList(types);
+    };
 
-    // Fetch dealers from expenses data and update the list
-    const dealers = expenses.reduce((acc, expense) => {
-      if (expense.dealer && !acc.includes(expense.dealer.name)) {
-        acc.push(expense.dealer.name);
+    const fetchDealers = async () => {
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/expenses/dealer_list/", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setDealersList(data);
+        } else {
+          console.error("Failed to fetch dealers");
+        }
+      } catch (error) {
+        console.error("Error fetching dealers:", error);
       }
-      return acc;
-    }, []);
-    setDealersList(dealers);
-  }, [expenses]);
+    };
 
-  useEffect(() => {
-    filterExpenses();
-  }, [searchTerm, startDate, endDate, expenseType, minAmount, maxAmount, selectedDealer]);
+    fetchExpenseTypes();
+    fetchDealers();
+  }, []);
 
-  const filterExpenses = () => {
-    let filteredData = expenses.filter((expense) => {
-      // Filter by search term
-      const matchesSearchTerm = expense.description.toLowerCase().includes(searchTerm.toLowerCase());
+  const debounceApplyFilters = useCallback(_.debounce((filters) => {
+    onFilterChange(filters);
+  }, 400), []);
 
-      // Filter by date range
-      const expenseDate = new Date(expense.date);
-      const isWithinDateRange = (!startDate || expenseDate >= startDate) && (!endDate || expenseDate <= endDate);
-
-      // Filter by expense type
-      const matchesExpenseType = !expenseType || expense.exp_type.toLowerCase() === expenseType.toLowerCase();
-
-      // Filter by dealer
-      const matchesDealer = !selectedDealer || (expense.dealer && expense.dealer.name === selectedDealer);
-
-      // Filter by amount range
-      const expenseAmount = parseFloat(expense.amount);
-      const isWithinAmountRange = (!minAmount || expenseAmount >= parseFloat(minAmount)) &&
-                                  (!maxAmount || expenseAmount <= parseFloat(maxAmount));
-
-      return matchesSearchTerm && isWithinDateRange && matchesExpenseType && matchesDealer && isWithinAmountRange;
+  const handleFilterChange = (newFilters) => {
+    setFilters((prevFilters) => {
+      const updatedFilters = { ...prevFilters, ...newFilters };
+      debounceApplyFilters(updatedFilters);
+      return updatedFilters;
     });
-
-    setFilteredExpenses(filteredData);
   };
 
   const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+    handleFilterChange({ searchTerm: e.target.value });
   };
 
   const handleStartDateChange = (e) => {
-    setStartDate(e.target.value ? new Date(e.target.value) : null);
+    handleFilterChange({ startDate: e.target.value ? new Date(e.target.value) : null });
   };
 
   const handleEndDateChange = (e) => {
-    setEndDate(e.target.value ? new Date(e.target.value) : null);
+    handleFilterChange({ endDate: e.target.value ? new Date(e.target.value) : null });
   };
 
   const handleExpenseTypeChange = (e) => {
-    setExpenseType(e.target.value);
+    handleFilterChange({ expenseType: e.target.value });
   };
 
   const handleMinAmountChange = (e) => {
-    setMinAmount(e.target.value);
+    handleFilterChange({ minAmount: e.target.value });
   };
 
   const handleMaxAmountChange = (e) => {
-    setMaxAmount(e.target.value);
+    handleFilterChange({ maxAmount: e.target.value });
   };
 
   const handleDealerChange = (e) => {
-    setSelectedDealer(e.target.value);
+    handleFilterChange({ selectedDealer: e.target.value });
   };
 
   const clearFilters = () => {
-    setSearchTerm("");
-    setStartDate(null);
-    setEndDate(null);
-    setExpenseType("");
-    setMinAmount("");
-    setMaxAmount("");
-    setSelectedDealer("");
-    fetchExpenses(); // Reload all expenses
+    setFilters({
+      searchTerm: "",
+      startDate: null,
+      endDate: null,
+      expenseType: "",
+      minAmount: "",
+      maxAmount: "",
+      selectedDealer: "",
+    });
+    applyFilters({
+      searchTerm: "",
+      startDate: null,
+      endDate: null,
+      expenseType: "",
+      minAmount: "",
+      maxAmount: "",
+      selectedDealer: "",
+    });
   };
-
-  const getTotalAmount = () => {
-    return filteredExpenses.reduce((total, expense) => total + parseFloat(expense.amount), 0).toFixed(2);
+  const applyFilters = (filters) => {
+    onFilterChange(filters);
   };
-
   return (
     <div className="bg-gray-100 p-4 rounded-lg shadow-lg">
       <h2 className="text-lg font-medium mb-2">Filters</h2>
@@ -111,7 +128,7 @@ const ExpenseFilterPanel = ({ expenses, filteredExpenses, setFilteredExpenses, f
         <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
         <input
           type="text"
-          value={searchTerm}
+          value={filters.searchTerm}
           onChange={handleSearchChange}
           className="px-3 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           placeholder="Search expenses..."
@@ -122,13 +139,13 @@ const ExpenseFilterPanel = ({ expenses, filteredExpenses, setFilteredExpenses, f
         <div className="flex space-x-2">
           <input
             type="date"
-            value={startDate ? startDate.toISOString().substr(0, 10) : ''}
+            value={filters.startDate ? filters.startDate.toISOString().substr(0, 10) : ''}
             onChange={handleStartDateChange}
             className="px-3 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
           <input
             type="date"
-            value={endDate ? endDate.toISOString().substr(0, 10) : ''}
+            value={filters.endDate ? filters.endDate.toISOString().substr(0, 10) : ''}
             onChange={handleEndDateChange}
             className="px-3 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
@@ -137,14 +154,14 @@ const ExpenseFilterPanel = ({ expenses, filteredExpenses, setFilteredExpenses, f
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">Expense Type</label>
         <select
-          value={expenseType}
+          value={filters.expenseType}
           onChange={handleExpenseTypeChange}
           className="px-3 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Select Expense Type</option>
           {expenseTypesList.map((type, index) => (
-            <option key={index} value={type}>
-              {type}
+            <option key={index} value={type.exp_type}>
+              {type.exp_type}
             </option>
           ))}
         </select>
@@ -152,14 +169,14 @@ const ExpenseFilterPanel = ({ expenses, filteredExpenses, setFilteredExpenses, f
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">Dealer</label>
         <select
-          value={selectedDealer}
+          value={filters.selectedDealer}
           onChange={handleDealerChange}
           className="px-3 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Select Dealer</option>
           {dealersList.map((dealer, index) => (
-            <option key={index} value={dealer}>
-              {dealer}
+            <option key={index} value={dealer.name}>
+              {dealer.name}
             </option>
           ))}
         </select>
@@ -169,14 +186,14 @@ const ExpenseFilterPanel = ({ expenses, filteredExpenses, setFilteredExpenses, f
         <div className="flex space-x-2">
           <input
             type="number"
-            value={minAmount}
+            value={filters.minAmount}
             onChange={handleMinAmountChange}
             className="px-3 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             placeholder="Min amount"
           />
           <input
             type="number"
-            value={maxAmount}
+            value={filters.maxAmount}
             onChange={handleMaxAmountChange}
             className="px-3 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             placeholder="Max amount"
@@ -184,7 +201,7 @@ const ExpenseFilterPanel = ({ expenses, filteredExpenses, setFilteredExpenses, f
         </div>
       </div>
       <div className="mb-4">
-        <p className="block text-sm font-medium text-gray-700 mb-1">Total Amount: &#8377;{getTotalAmount()}</p>
+        <p className="block text-sm font-medium text-gray-700 mb-1">Total Amount: &#8377;{totalAmount}</p>
       </div>
       <div>
         <button

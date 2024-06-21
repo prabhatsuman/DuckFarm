@@ -1,25 +1,81 @@
 import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { FiDownload, FiPlus } from "react-icons/fi";
-import ExpenseFilterPanel from "./ExpenseFilterPanel.js";
-import AddExpenseModal from "./AddExpenseForm.js";
+import ExpenseFilterPanel from "./ExpenseFilterPanel";
+import AddExpenseModal from "./AddExpenseForm";
 
 const ExpenseTable = () => {
   const [expenses, setExpenses] = useState([]);
   const [filteredExpenses, setFilteredExpenses] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [expensesPerPage] = useState(10);
   const [sortColumn, setSortColumn] = useState(null);
-  const [sortOrder, setSortOrder] = useState("asc"); // 'asc' or 'desc'
+  const [sortOrder, setSortOrder] = useState("asc");
   const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [minAmount, setMinAmount] = useState("");
+  const [maxAmount, setMaxAmount] = useState("");
+  const [selectedDealer, setSelectedDealer] = useState("");
+  const [expenseType, setExpenseType] = useState("");
+  const [totalAmount, setTotalAmount] = useState(0);
 
   useEffect(() => {
     fetchExpenses();
-  }, []);
+  }, [
+    currentPage,
+    startDate,
+    endDate,
+    searchTerm,
+    minAmount,
+    maxAmount,
+    selectedDealer,
+    expenseType,
+  ]);
 
   const fetchExpenses = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/expenses/", {
+      const apiUrl = "http://127.0.0.1:8000/api/expenses/";
+
+      const queryParams = {
+        page: currentPage,
+        page_size: expensesPerPage,
+      };
+
+      if (searchTerm.trim() !== "") {
+        queryParams.searchTerm = searchTerm.trim();
+      }
+
+      if (startDate instanceof Date && !isNaN(startDate)) {
+        queryParams.startDate = startDate.toISOString().substr(0, 10);
+      }
+
+      if (endDate instanceof Date && !isNaN(endDate)) {
+        queryParams.endDate = endDate.toISOString().substr(0, 10);
+      }
+
+      if (minAmount !== "" && !isNaN(parseFloat(minAmount))) {
+        queryParams.minAmount = parseFloat(minAmount);
+      }
+
+      if (maxAmount !== "" && !isNaN(parseFloat(maxAmount))) {
+        queryParams.maxAmount = parseFloat(maxAmount);
+      }
+
+      if (selectedDealer.trim() !== "") {
+        queryParams.selectedDealer = selectedDealer.trim();
+      }
+
+      if (expenseType.trim() !== "") {
+        queryParams.expenseType = expenseType.trim();
+      }
+
+      const url = new URL(apiUrl);
+      url.search = new URLSearchParams(queryParams).toString();
+
+      const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
@@ -27,14 +83,27 @@ const ExpenseTable = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setExpenses(data);
-        setFilteredExpenses(data); // Initialize filteredExpenses with all expenses
+        setExpenses(data.results);
+        setFilteredExpenses(data.results);
+        setTotalPages(data.total_pages);
+        setTotalAmount(data.total_amount);
       } else {
         console.error("Failed to fetch expenses");
       }
     } catch (error) {
       console.error("Error fetching expenses:", error);
     }
+  };
+
+  const handleFilterChange = (newFilters) => {
+    setSearchTerm(newFilters.searchTerm);
+    setStartDate(newFilters.startDate);
+    setEndDate(newFilters.endDate);
+    setMinAmount(newFilters.minAmount);
+    setMaxAmount(newFilters.maxAmount);
+    setSelectedDealer(newFilters.selectedDealer);
+    setExpenseType(newFilters.expenseType);
+    setCurrentPage(1);
   };
 
   const sortExpenses = (data) => {
@@ -65,15 +134,6 @@ const ExpenseTable = () => {
     setFilteredExpenses(sortedExpenses);
   };
 
-  const indexOfLastExpense = currentPage * expensesPerPage;
-  const indexOfFirstExpense = indexOfLastExpense - expensesPerPage;
-  const currentExpenses = filteredExpenses.slice(
-    indexOfFirstExpense,
-    indexOfLastExpense
-  );
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
   const handleDownloadExcel = () => {
     const totalAmount = filteredExpenses.reduce(
       (total, expense) => total + parseFloat(expense.amount),
@@ -81,21 +141,17 @@ const ExpenseTable = () => {
     );
 
     const data = [
-      // Headers
       ["Date", "Description", "Dealer Name", "Dealer Type", "Amount"],
-      // Data rows
       ...filteredExpenses.map((expense) => [
         expense.date,
         expense.description,
         expense.dealer ? expense.dealer.name : "No dealer assigned",
         expense.dealer ? expense.dealer.dealer_type : "N/A",
-        parseFloat(expense.amount), // Ensure amount is parsed as a float
+        parseFloat(expense.amount),
       ]),
-      // Total amount row
-      ["", "", "", "Total:", totalAmount.toFixed(2)], // Format total amount to 2 decimal places
+      ["", "", "", "Total:", totalAmount.toFixed(2)],
     ];
 
-    // Generate current date and time for file name
     const currentDate = new Date()
       .toLocaleString("en-US", {
         year: "numeric",
@@ -105,46 +161,48 @@ const ExpenseTable = () => {
         minute: "2-digit",
         second: "2-digit",
       })
-      .replace(/[/:]/g, "-"); // Replace slashes and colons to ensure valid file name
+      .replace(/[/:]/g, "-");
 
     const fileName = `expenses-${currentDate}.xlsx`;
 
-    // Create a new workbook and worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Expenses");
 
     XLSX.writeFile(workbook, fileName);
   };
+
   const toggleAddExpenseModal = () => {
     setIsAddExpenseModalOpen(!isAddExpenseModalOpen);
   };
 
   const handleExpenseAdded = () => {
-    toggleAddExpenseModal();
     fetchExpenses();
+    toggleAddExpenseModal();
+  };
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
   };
 
   return (
     <div className="flex flex-row m-auto w-full max-h-screen">
-      {/* Main Content (Expense Table) */}
-      <div className="flex flex-col w-3/4 px-4 ">
-        <div className="flex items-end mb-4 justify-end">
-          <div className="flex items-end justify-end">
-            <div className="flex gap-2">
-              <button
-                onClick={handleDownloadExcel}
-                className="flex items-center bg-blue-300 text-black px-4 py-2 rounded-md"
-              >
-                <FiDownload className="mr-2" /> Download Excel
-              </button>
-              <button
-                className="flex items-center bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
-                onClick={toggleAddExpenseModal}
-              >
-                <FiPlus className="mr-2" /> Add Expense
-              </button>
-            </div>
+      <div className="flex flex-col w-3/4 px-4">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">Expenses</h1>
+          <div className="flex space-x-2">
+            <button
+              onClick={handleDownloadExcel}
+              className="flex items-center bg-blue-300 text-black px-4 py-2 rounded-md"
+            >
+              <FiDownload className="mr-2" /> Download Excel
+            </button>
+            <button
+              onClick={toggleAddExpenseModal}
+              className="flex items-center bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+            >
+              <FiPlus className="mr-2" /> Add Expense
+            </button>
           </div>
         </div>
         <div className="overflow-hidden overflow-y-auto max-h-[calc(100vh-250px)]">
@@ -159,23 +217,21 @@ const ExpenseTable = () => {
                   Date
                   {sortColumn === "date" && (
                     <span className="ml-1">
-                      {sortOrder === "asc" ? "↑" : "↓"}
+                      {sortOrder === "asc" ? "▲" : "▼"}
                     </span>
                   )}
                 </th>
                 <th
                   scope="col"
-                  className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal cursor-pointer"
-                  onClick={() => handleSort("description")}
+                  className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal"
                 >
                   Description
                 </th>
                 <th
                   scope="col"
-                  className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal cursor-pointer"
-                  onClick={() => handleSort("dealer")}
+                  className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal"
                 >
-                  Dealers
+                  Dealer
                 </th>
                 <th
                   scope="col"
@@ -185,25 +241,32 @@ const ExpenseTable = () => {
                   Amount
                   {sortColumn === "amount" && (
                     <span className="ml-1">
-                      {sortOrder === "asc" ? "↑" : "↓"}
+                      {sortOrder === "asc" ? "▲" : "▼"}
                     </span>
                   )}
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {currentExpenses.map((expense) => (
+              {filteredExpenses.map((expense) => (
                 <tr key={expense.id}>
                   <td className="px-6 py-4">{expense.date}</td>
                   <td className="px-6 py-4 break-words w-64">
                     {expense.description}
                   </td>
-                  <td className="px-6 py-4 break-words w-72">
-                    {expense.dealer
-                      ? `${expense.dealer.name} (${expense.dealer.dealer_type})`
-                      : "Self Expense"}
+                  <td className="px-6 py-4">
+                    {expense.dealer ? (
+                      <div>
+                        <div>{expense.dealer.name}</div>
+                        <div className="text-xs text-gray-500">
+                          {expense.dealer.dealer_type}
+                        </div>
+                      </div>
+                    ) : (
+                      "No dealer assigned"
+                    )}
                   </td>
-                  <td className="px-6 py-4">{expense.amount}</td>
+                  <td className="px-6 py-4">{parseFloat(expense.amount)}</td>
                 </tr>
               ))}
             </tbody>
@@ -212,18 +275,12 @@ const ExpenseTable = () => {
         <nav className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sticky bottom-0">
           <div>
             <p className="text-sm text-gray-700">
-              Showing{" "}
-              <span className="font-medium">{indexOfFirstExpense + 1}</span> to{" "}
-              <span className="font-medium">
-                {Math.min(indexOfLastExpense, filteredExpenses.length)}
-              </span>{" "}
-              of <span className="font-medium">{filteredExpenses.length}</span>{" "}
-              results
+              Page <b>{currentPage}</b> of <b>{totalPages}</b>
             </p>
           </div>
           <div className="flex space-x-2">
             <button
-              onClick={() => paginate(currentPage - 1)}
+              onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
               className={`px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 currentPage === 1 ? "cursor-not-allowed opacity-50" : ""
@@ -231,16 +288,11 @@ const ExpenseTable = () => {
             >
               Previous
             </button>
-           
             <button
-              onClick={() => paginate(currentPage + 1)}
-              disabled={
-                currentPage ===
-                Math.ceil(filteredExpenses.length / expensesPerPage)
-              }
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
               className={`px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                currentPage ===
-                Math.ceil(filteredExpenses.length / expensesPerPage)
+                currentPage === totalPages
                   ? "cursor-not-allowed opacity-50"
                   : ""
               }`}
@@ -250,17 +302,11 @@ const ExpenseTable = () => {
           </div>
         </nav>
       </div>
-
-      {/* Sidebar (Filter Panel) */}
       <div className="w-1/4 px-4 py-4 sticky">
-        <ExpenseFilterPanel
-          expenses={expenses}
-          filteredExpenses={filteredExpenses}
-          setFilteredExpenses={setFilteredExpenses}
-          fetchExpenses={fetchExpenses}
-        />
+        <ExpenseFilterPanel 
+        onFilterChange={handleFilterChange}
+        totalAmount={totalAmount} />
       </div>
-      {/* Add Expense Modal */}
       {isAddExpenseModalOpen && (
         <AddExpenseModal
           isOpen={isAddExpenseModalOpen}

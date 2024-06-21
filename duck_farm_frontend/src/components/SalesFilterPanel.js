@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useCallback } from "react";
+import _ from 'lodash';
 
 const SalesFilterPanel = ({ onFilterChange,totalAmount }) => {
   const [filters, setFilters] = useState({
@@ -35,42 +36,42 @@ const SalesFilterPanel = ({ onFilterChange,totalAmount }) => {
 
     fetchDealers();
   }, []);
+  const debounceApplyFilters = useCallback(_.debounce((filters) => {
+    onFilterChange(filters);
+  }, 400), []);
+
+  const handleFilterChange = (newFilters) => {
+    setFilters((prevFilters) => {
+      const updatedFilters = { ...prevFilters, ...newFilters };
+      debounceApplyFilters(updatedFilters);
+      return updatedFilters;
+    });
+  };
 
   const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setFilters((prevFilters) => ({ ...prevFilters, searchTerm: value }));
-    applyFilters({ ...filters, searchTerm: value });
+    handleFilterChange({ searchTerm: e.target.value });
   };
 
   const handleStartDateChange = (e) => {
-    const value = e.target.value ? new Date(e.target.value) : null;
-    setFilters((prevFilters) => ({ ...prevFilters, startDate: value }));
-    applyFilters({ ...filters, startDate: value });
+    handleFilterChange({ startDate: e.target.value ? new Date(e.target.value) : null });
   };
 
   const handleEndDateChange = (e) => {
-    const value = e.target.value ? new Date(e.target.value) : null;
-    setFilters((prevFilters) => ({ ...prevFilters, endDate: value }));
-    applyFilters({ ...filters, endDate: value });
+    handleFilterChange({ endDate: e.target.value ? new Date(e.target.value) : null });
   };
 
   const handleMinAmountChange = (e) => {
-    const value = e.target.value;
-    setFilters((prevFilters) => ({ ...prevFilters, minAmount: value }));
-    applyFilters({ ...filters, minAmount: value });
+    handleFilterChange({ minAmount: e.target.value });
   };
 
   const handleMaxAmountChange = (e) => {
-    const value = e.target.value;
-    setFilters((prevFilters) => ({ ...prevFilters, maxAmount: value }));
-    applyFilters({ ...filters, maxAmount: value });
+    handleFilterChange({ maxAmount: e.target.value });
   };
 
   const handleDealerChange = (e) => {
-    const value = e.target.value;
-    setFilters((prevFilters) => ({ ...prevFilters, selectedDealer: value }));
-    applyFilters({ ...filters, selectedDealer: value });
+    handleFilterChange({ selectedDealer: e.target.value });
   };
+
 
   const clearFilters = () => {
     setFilters({
