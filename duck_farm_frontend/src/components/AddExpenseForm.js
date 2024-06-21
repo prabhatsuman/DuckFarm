@@ -64,7 +64,7 @@ const AddExpenseForm = ({ onClose, onExpenseAdded }) => {
   const clearBackendCache = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/expenses/clear_cache/",
+        "http://127.0.0.1:8000/api/clear_cache/",
         {
           method: "GET",
           headers: {
@@ -101,6 +101,7 @@ const AddExpenseForm = ({ onClose, onExpenseAdded }) => {
       if (response.ok) {
         console.log("Expense added successfully");
         eventBus.dispatch("newExpenseDataAdded", { newExpenseDataAdded: true });
+        eventBus.dispatch("newEarningDataAdded", { newEarningDataAdded: true });
         await clearBackendCache();
 
 

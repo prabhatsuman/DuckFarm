@@ -43,7 +43,7 @@ const AddStockPopup = ({ onClose, onCreate }) => {
   const clearBackendCache = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/expenses/clear_cache/",
+        "http://127.0.0.1:8000/api/clear_cache/",
         {
           method: "GET",
           headers: {
@@ -102,6 +102,7 @@ const AddStockPopup = ({ onClose, onCreate }) => {
       if (response.ok) {
         console.log("Stock added successfully");
         eventBus.dispatch("newExpenseDataAdded", { newExpenseDataAdded: true });
+        eventBus.dispatch("newEarningDataAdded", { newEarningDataAdded: true });
         await clearBackendCache();
         onCreate();
       } else {

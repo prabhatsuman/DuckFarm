@@ -14,7 +14,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.core.cache import cache
 from django_filters.rest_framework import DjangoFilterBackend
 import django_filters
-from .pagination import DailyEggCollectionPagination, MonthlyEggCollectionPagination, SalesPagination, ExpensePagination, DailySalesPagination, MonthlySalesPagination, MonthlyExpensePagination
+from .pagination import DailyEggCollectionPagination, MonthlyEggCollectionPagination, SalesPagination, ExpensePagination, DailySalesPagination, MonthlySalesPagination, MonthlyExpensePagination, MonthlyEarningPagination
 from .filters import SalesFilter, ExpenseFilter
 
 from .serializers import (
@@ -64,6 +64,7 @@ class LoginView(APIView):
         if user:
             refresh = RefreshToken.for_user(user)
             return Response({
+                'username': user.username,
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
             })
@@ -646,3 +647,66 @@ class SalesViewSet(viewsets.ModelViewSet):
         cache.delete('daily_sales_data')
         cache.delete('monthly_sales_data')
         return Response({'message': 'cache cleared'}, status=status.HTTP_200_OK)
+
+class EarningViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+    pagination_class = MonthlyEarningPagination
+    
+    def list(self, request):
+        cache_key = 'total_earning_data'
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data)
+        else :
+            total_expense = Expense.objects.aggregate(total_expense=Sum('amount'))['total_expense'] or 0
+            total_sales = Sales.objects.aggregate(total_sales=Sum('amount'))['total_sales'] or 0
+            total_earning = total_sales - total_expense
+            return Response({'total_earning': total_earning, 'total_expense': total_expense, 'total_sales': total_sales})
+    @action(detail=False, methods=['get'], url_path='monthly_view', permission_classes=[IsAuthenticated])
+    def monthly_view(self, request):
+        cache_key = 'monthly_earning_data'
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            data=cached_data
+        else:
+            queryset = Sales.objects.order_by('date')
+            first_year = queryset.first().date.year
+            last_year = queryset.last().date.year
+            months = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December']
+            data = []
+            for year in range(first_year, last_year + 1):
+                for month in range(1, 13):
+                    total_sales = queryset.filter(date__year=year, date__month=month).aggregate(
+                        total_sales=Sum('amount'))['total_sales'] or 0
+                    total_expense = Expense.objects.filter(date__year=year, date__month=month).aggregate(
+                        total_expense=Sum('amount'))['total_expense'] or 0
+                    total_earning = total_sales - total_expense
+                    data.append({
+                        'year': year,
+                        'month': months[month - 1],
+                        'total_earning': total_earning
+                    })
+            cache.set(cache_key, data, timeout=60*60)
+            
+        paginator=MonthlyEarningPagination()
+        page=paginator.paginate_queryset(data,request)
+        if page is not None:
+            return paginator.get_paginated_response(page)
+        return Response(data)
+    
+class ClearCacheView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request):
+       #clear cache for all views
+        cache.delete('daily_egg_collection_data')
+        cache.delete('monthly_egg_collection_data')
+        cache.delete('daily_sales_data')
+        cache.delete('monthly_sales_data')
+        cache.delete('monthly_expense_data')
+        cache.delete('total_earning_data')
+        cache.delete('monthly_earning_data')
+        return Response({'message': 'cache cleared'}, status=status.HTTP_200_OK)
+        
+        
+        

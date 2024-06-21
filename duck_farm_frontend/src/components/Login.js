@@ -34,6 +34,7 @@ export default function Login() {
       })
       .then((response) => {
         // Save the token to local storage
+        localStorage.setItem("username",response.data.username);
         localStorage.setItem("accessToken", response.data.access);
         localStorage.setItem("refreshToken", response.data.refresh);
         console.log("Login successful:", response.data);

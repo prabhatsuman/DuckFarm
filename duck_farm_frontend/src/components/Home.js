@@ -4,6 +4,7 @@ import EggCard from "./EggCard";
 import EggCollectionChart from "./EggCollectionChart";
 import SalesChart from "./SalesChart";
 import ExpenseChart from "./ExpenseChart";
+import EarningChart from "./EarningChart";
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 const Home = () => {
@@ -92,8 +93,7 @@ const Home = () => {
 
           {/* Graph 4 */}
           <div className="bg-white overflow-hidden shadow rounded-lg">
-            <h3 className="text-lg font-medium text-gray-900 p-6">Graph 4</h3>
-            {/* Insert Graph 4 component here */}
+            <EarningChart />
           </div>
         </div>
       )}
