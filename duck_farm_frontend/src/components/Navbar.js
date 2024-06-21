@@ -18,7 +18,7 @@ const Navbar = ({ toggleSidebar }) => {
     // Clear access token and username from localStorage
     localStorage.removeItem("accessToken");
     localStorage.removeItem("username");
-    navigate("/login");
+    navigate("/");
   };
 
   const handleRedirect = () => {
