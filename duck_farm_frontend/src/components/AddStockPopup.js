@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getTodayDate } from "../utils/getTodayDate";
-
+import eventBus from "../utils/eventBus";
 
 const AddStockPopup = ({ onClose, onCreate }) => {
   const stockTypes = ["feed", "medicine", "other"];
@@ -15,7 +15,7 @@ const AddStockPopup = ({ onClose, onCreate }) => {
     dealer: "",
     description: "",
   });
-  const[dealers, setDealers] = useState([]);
+  const [dealers, setDealers] = useState([]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,7 +40,28 @@ const AddStockPopup = ({ onClose, onCreate }) => {
       console.error("Error fetching dealers:", error);
     }
   };
-
+  const clearBackendCache = async () => {
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/expenses/clear_cache/",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      if (response.ok) {
+        const result = await response.json();
+        console.log(result.message);
+      } else {
+        console.error("Failed to clear cache");
+      }
+    } catch (error) {
+      console.error("Error clearing cache:", error);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,7 +73,6 @@ const AddStockPopup = ({ onClose, onCreate }) => {
         date_of_purchase: formData.dateOfPurchase,
         dealer: formData.dealer,
         description: formData.description,
-        
       };
 
       if (selectedStockType === "medicine") {
@@ -68,16 +88,25 @@ const AddStockPopup = ({ onClose, onCreate }) => {
         };
       }
 
-      await fetch(`http://127.0.0.1:8000/api/stocks/${selectedStockType}/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-        body: JSON.stringify(apiFormData),
-      });
-
-      onCreate(); // Triggered after successful creation
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/stocks/${selectedStockType}/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+          body: JSON.stringify(apiFormData),
+        }
+      );
+      if (response.ok) {
+        console.log("Stock added successfully");
+        eventBus.dispatch("newExpenseDataAdded", { newExpenseDataAdded: true });
+        await clearBackendCache();
+        onCreate();
+      } else {
+        console.error("Failed to add stock");
+      }
     } catch (error) {
       console.error("Error adding stock:", error);
     }
@@ -542,7 +571,6 @@ const AddStockPopup = ({ onClose, onCreate }) => {
               </div>
             </div>
           </div>
-         
         </div>
       </div>
     </div>

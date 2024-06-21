@@ -14,7 +14,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.core.cache import cache
 from django_filters.rest_framework import DjangoFilterBackend
 import django_filters
-from .pagination import DailyEggCollectionPagination, MonthlyEggCollectionPagination, SalesPagination, ExpensePagination,DailySalesPagination,MonthlySalesPagination
+from .pagination import DailyEggCollectionPagination, MonthlyEggCollectionPagination, SalesPagination, ExpensePagination, DailySalesPagination, MonthlySalesPagination, MonthlyExpensePagination
 from .filters import SalesFilter, ExpenseFilter
 
 from .serializers import (
@@ -149,7 +149,6 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = ExpenseFilter
 
-
     def get_serializer_class(self):
         if self.action == 'create' or self.action == 'update':
             return ExpenseAddSerializer
@@ -210,17 +209,19 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
     @action(detail=False, methods=['get'], url_path='dealer_list', permission_classes=[IsAuthenticated], serializer_class=DealerSerializer)
     def dealer_list(self, request):
         dealers = Dealer.objects.filter(expense__isnull=False).distinct()
         serializer = DealerSerializer(dealers, many=True)
         return Response(serializer.data)
-    @action(detail=False,methods=['get'],url_path='expense_types',permission_classes=[IsAuthenticated])
-    def expense_types(self,request):
-        
-        expense_types = Expense.objects.filter(exp_type__isnull=False).distinct()
+
+    @action(detail=False, methods=['get'], url_path='expense_types', permission_classes=[IsAuthenticated])
+    def expense_types(self, request):
+
+        expense_types = Expense.objects.filter(
+            exp_type__isnull=False).distinct()
         return Response(expense_types.values('exp_type').distinct())
-    
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -231,6 +232,42 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='monthly_view', permission_classes=[IsAuthenticated])
+    def monthly_view(self, request):
+        cache_key = 'monthly_expense_data'
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            data = cached_data
+        else:
+            queryset = self.queryset.order_by('date')
+            first_year = queryset.first().date.year
+            last_year = queryset.last().date.year
+            months = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December']
+            data = []
+            for year in range(first_year, last_year + 1):
+                for month in range(1, 13):
+                    total_expense = queryset.filter(date__year=year, date__month=month).aggregate(
+                        total_expense=Sum('amount'))['total_expense'] or 0
+
+                    data.append({
+                        'year': year,
+                        'month': months[month - 1],
+                        'total_expense': total_expense
+                    })
+            cache.set(cache_key, data, timeout=60*60)
+
+        paginator = MonthlyExpensePagination()
+        page = paginator.paginate_queryset(data, request)
+        if page is not None:
+            return paginator.get_paginated_response(page)
+        return Response(data)
+    @action(detail=False, methods=['get'], url_path='clear_cache', permission_classes=[IsAuthenticated])
+    def clear_cache(self, request):
+        cache.delete('monthly_expense_data')
+        return Response({'message': 'cache cleared'}, status=status.HTTP_200_OK)
+    
 
 
 class FeedStockViewSet(viewsets.ModelViewSet):
@@ -281,7 +318,7 @@ class FeedStockViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-
+    
 class MedicineStockViewSet(viewsets.ModelViewSet):
     queryset = MedicineStock.objects.all()
     serializer_class = MedicineStockSerializer
@@ -380,7 +417,6 @@ class OtherStockViewSet(viewsets.ModelViewSet):
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class DailyEggCollectionViewSet(viewsets.ModelViewSet):
     queryset = DailyEggCollection.objects.all()
     serializer_class = DailyEggCollectionSerializer
@@ -418,12 +454,11 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
             data = cached_data
         else:
             queryset = self.queryset.order_by('date')
-            first_date = queryset.first().date            
+            first_date = queryset.first().date
             last_date = date.today()
-            
 
             first_date -= timedelta(days=first_date.weekday())
-            last_date += timedelta(days=(6 - last_date.weekday()))
+            last_date += timedelta(days=(7 - last_date.weekday()))
 
             data = []
             day_list = ['Monday', 'Tuesday', 'Wednesday',
@@ -477,23 +512,22 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
         if page is not None:
             return paginator.get_paginated_response(page)
         return Response(data)
-    @action(detail=False,methods=['get'],url_path='clear_cache',permission_classes=[IsAuthenticated])
-    def clear_cache(self,request):       
+
+    @action(detail=False, methods=['get'], url_path='clear_cache', permission_classes=[IsAuthenticated])
+    def clear_cache(self, request):
         cache.delete('daily_egg_collection_data')
         cache.delete('monthly_egg_collection_data')
-        return Response({'message':'cache cleared'},status=status.HTTP_200_OK)
+        return Response({'message': 'cache cleared'}, status=status.HTTP_200_OK)
 
-    
+
 class SalesViewSet(viewsets.ModelViewSet):
-    queryset = Sales.objects.all().order_by('-date') 
+    queryset = Sales.objects.all().order_by('-date')
     serializer_class = SalesSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = SalesPagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = SalesFilter
     ordering_fields = ['date', 'amount', 'quantity']
-
-    
 
     def create(self, request, *args, **kwargs):
         serializer = SalesSerializer(data=request.data)
@@ -515,18 +549,17 @@ class SalesViewSet(viewsets.ModelViewSet):
                 amount=amount,
                 description=description
             )
-            #on sucecessful adding of sales, Total egg stock should be decreased by the quantity of eggs sold
+            # on sucecessful adding of sales, Total egg stock should be decreased by the quantity of eggs sold
             egg_stock, created = EggStock.objects.get_or_create(id=1)
             egg_stock.total_stock -= quantity
             egg_stock.save()
-                        
 
             response_serializer = SalesSerializer(sales)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -536,18 +569,19 @@ class SalesViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-    @action(detail=False,methods=['get'],url_path='dealer_list',permission_classes=[IsAuthenticated],serializer_class=DealerSerializer)
-    def dealer_list(self,request):
-       #find all dealers present in sales table
+
+    @action(detail=False, methods=['get'], url_path='dealer_list', permission_classes=[IsAuthenticated], serializer_class=DealerSerializer)
+    def dealer_list(self, request):
+       # find all dealers present in sales table
         dealers = Dealer.objects.filter(sales__isnull=False).distinct()
-        serializer = DealerSerializer(dealers,many=True)
+        serializer = DealerSerializer(dealers, many=True)
         return Response(serializer.data)
-    
-    @action(detail=False,methods=['get'],url_path='daily_view',permission_classes=[IsAuthenticated])
-    def daily_view(self,request):
+
+    @action(detail=False, methods=['get'], url_path='daily_view', permission_classes=[IsAuthenticated])
+    def daily_view(self, request):
         cache_key = 'daily_sales_data'
         cached_data = cache.get(cache_key)
-        
+
         if cached_data:
             data = cached_data
         else:
@@ -555,7 +589,7 @@ class SalesViewSet(viewsets.ModelViewSet):
             first_date = queryset.first().date
             last_date = date.today()
             first_date -= timedelta(days=first_date.weekday())
-            last_date += timedelta(days=(6 - last_date.weekday()))
+            last_date += timedelta(days=(7 - last_date.weekday()))
             data = []
             day_list = ['Monday', 'Tuesday', 'Wednesday',
                         'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -567,16 +601,17 @@ class SalesViewSet(viewsets.ModelViewSet):
                     'date': single_date,
                     'sales': sales
                 })
-                
-            cache.set(cache_key,data,timeout=60*60)
-            
+
+            cache.set(cache_key, data, timeout=60*60)
+
         paginator = DailySalesPagination()
-        page = paginator.paginate_queryset(data,request)
+        page = paginator.paginate_queryset(data, request)
         if page is not None:
             return paginator.get_paginated_response(page)
         return Response(data)
-    @action(detail=False,methods=['get'],url_path='monthly_view',permission_classes=[IsAuthenticated])
-    def monthly_view(self,request):
+
+    @action(detail=False, methods=['get'], url_path='monthly_view', permission_classes=[IsAuthenticated])
+    def monthly_view(self, request):
         cache_key = 'monthly_sales_data'
         cached_data = cache.get(cache_key)
         if cached_data:
@@ -599,17 +634,15 @@ class SalesViewSet(viewsets.ModelViewSet):
                         'sales': sales
                     })
             cache.set(cache_key, data, timeout=60*60)
-            
+
         paginator = MonthlySalesPagination()
-        page = paginator.paginate_queryset(data,request)
+        page = paginator.paginate_queryset(data, request)
         if page is not None:
             return paginator.get_paginated_response(page)
         return Response(data)
-    
-    @action (detail=False,methods=['get'],url_path='clear_cache',permission_classes=[IsAuthenticated])
-    def clear_cache(self,request):
+
+    @action(detail=False, methods=['get'], url_path='clear_cache', permission_classes=[IsAuthenticated])
+    def clear_cache(self, request):
         cache.delete('daily_sales_data')
         cache.delete('monthly_sales_data')
-        return Response({'message':'cache cleared'},status=status.HTTP_200_OK)
-    
-    
+        return Response({'message': 'cache cleared'}, status=status.HTTP_200_OK)

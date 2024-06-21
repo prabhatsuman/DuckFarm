@@ -1,12 +1,24 @@
-import React from "react";
+import React, { useState } from "react";
 import DuckCard from "./DuckCard";
 import EggCard from "./EggCard";
 import EggCollectionChart from "./EggCollectionChart";
 import SalesChart from "./SalesChart";
+import ExpenseChart from "./ExpenseChart";
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 const Home = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const handleNextPage = () => {
+    setCurrentPage((prevPage) => (prevPage === 1 ? 2 : 1));
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage((prevPage) => (prevPage === 2 ? 1 : 2));
+  };
+
   return (
-    <div className="p-6">
+    <div className="px-6 py-3">
       {/* Cards Section */}
       <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1 */}
@@ -40,20 +52,51 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Graphs Section */}
-      <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
-        {/* Graph 1 */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <EggCollectionChart />
-        </div>
-
-        {/* Graph 2 */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <SalesChart />
-        </div>
-
-       
+      {/* Navigation Buttons */}
+      <div className="mt-3 flex justify-end space-x-4">
+        <button
+          onClick={handlePrevPage}
+          className="bg-gray-200 text-black-700 p-3 rounded-full shadow"
+          disabled={currentPage === 1}
+        >
+          <FiChevronLeft size={12} />
+        </button>
+        <button
+          onClick={handleNextPage}
+          className="bg-gray-200 text-black-700 p-3 rounded-full shadow"
+          disabled={currentPage === 2}
+        >
+          <FiChevronRight size={12} />
+        </button>
       </div>
+
+      {/* Graphs Section */}
+      {currentPage === 1 ? (
+        <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
+          {/* Graph 1 */}
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <EggCollectionChart />
+          </div>
+
+          {/* Graph 2 */}
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <SalesChart />
+          </div>
+        </div>
+      ) : (
+        <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
+          {/* Graph 3 */}
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <ExpenseChart/>
+          </div>
+
+          {/* Graph 4 */}
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <h3 className="text-lg font-medium text-gray-900 p-6">Graph 4</h3>
+            {/* Insert Graph 4 component here */}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

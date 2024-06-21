@@ -21,7 +21,7 @@ export default function Dashboard() {
                 <Sidebar isOpen={isSidebarOpen} />
             <div className="flex flex-auto flex-col"> 
             <Navbar toggleSidebar={toggleSidebar} />
-                <main className="flex-auto p-6 h-full">
+                <main className="flex-auto px-6 py-3 h-full">
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="dealerinfo" element={<DealerInfo />} />
