@@ -44,22 +44,24 @@ const SalesChart = () => {
   const [view, setView] = useState("daily");
 
   useEffect(() => {
-    fetchTotalDailyPages();
-    fetchTotalMonthlyPages();
-  }, []);
-
-  useEffect(() => {
-    const handleNewSalesDataAdded = () => {
-      fetchTotalDailyPages();
-      fetchTotalMonthlyPages();
+    const fetchData = async () => {
+      await fetchTotalDailyPages();
+      await fetchTotalMonthlyPages();
     };
 
+    fetchData();
+      const handleNewSalesDataAdded = () => {
+      fetchData();
+    };
     eventBus.on("newSalesDataAdded", handleNewSalesDataAdded);
-
     return () => {
       eventBus.remove("newSalesDataAdded", handleNewSalesDataAdded);
     };
+
+  
   }, []);
+
+  
 
   const fetchTotalDailyPages = async () => {
     try {
@@ -76,10 +78,8 @@ const SalesChart = () => {
       setDailyTotalPages(result.count);
 
       setDailyPage(result.count);
-      fetchDailyData(result.count);
-      setDailyDateRange(
-        `From ${result.date_range.start} to ${result.date_range.end}`
-      );
+      await fetchDailyData(result.count);
+      
     } catch (error) {
       console.error("Error fetching total daily pages:", error);
     }
@@ -99,23 +99,14 @@ const SalesChart = () => {
       const result = await response.json();
       setMonthlyTotalPages(result.count);
       setMonthlyPage(result.count);
-      fetchMonthlyData(result.count);
-      setMonthlyDateRange(
-        `From ${result.date_range.start} to ${result.date_range.end}`
-      );
+      await fetchMonthlyData(result.count);
+     
     } catch (error) {
       console.error("Error fetching total monthly pages:", error);
     }
   };
 
-  useEffect(() => {
-    fetchDailyData(dailyPage);
-  }, [dailyPage]);
-
-  useEffect(() => {
-    fetchMonthlyData(monthlyPage);
-  }, [monthlyPage]);
-
+ 
   const fetchDailyData = async (page) => {
     try {
       // Replace the API endpoint with your actual endpoint for daily view
@@ -160,12 +151,14 @@ const SalesChart = () => {
     }
   };
 
-  const handleDailyPageChange = (page) => {
+  const handleDailyPageChange = async (page) => {
     setDailyPage(page);
+    await fetchDailyData(page);
   };
 
-  const handleMonthlyPageChange = (page) => {
+  const handleMonthlyPageChange = async (page) => {
     setMonthlyPage(page);
+    await fetchMonthlyData(page);
   };
 
   useEffect(() => {
@@ -205,7 +198,7 @@ const SalesChart = () => {
     }
   }, [monthlyData]);
 
-   const renderChart = () => {
+  const renderChart = () => {
     switch (view) {
       case "daily":
         return (
@@ -216,10 +209,9 @@ const SalesChart = () => {
                 tooltip: {
                   callbacks: {
                     title: (tooltipItem) =>
-                        
-                        `${dailyData[tooltipItem[0].dataIndex].date}`,
+                      `${dailyData[tooltipItem[0].dataIndex].date}`,
                     label: (tooltipItem) =>
-                      `Daily Sales: ₹${tooltipItem.raw.toFixed(2)}` 
+                      `Daily Sales: ₹${tooltipItem.raw.toFixed(2)}`,
                   },
                 },
               },
@@ -234,9 +226,8 @@ const SalesChart = () => {
               plugins: {
                 tooltip: {
                   callbacks: {
-                  
                     label: (tooltipItem) =>
-                      `Monthly Sales: ₹${tooltipItem.raw.toFixed(2)}` // Adding ₹ symbol
+                      `Monthly Sales: ₹${tooltipItem.raw.toFixed(2)}`, // Adding ₹ symbol
                   },
                 },
               },

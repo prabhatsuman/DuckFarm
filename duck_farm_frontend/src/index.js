@@ -4,7 +4,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { refreshToken } from './utils/auth';
-import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+
 
 // Set up a refresh interval (e.g., every 20 minutes, before the token expires)
 const REFRESH_INTERVAL = 20 * 60 * 1000; // 20 minutes in milliseconds
@@ -24,5 +24,3 @@ root.render(
 reportWebVitals();
 
 
-// Register the service worker
-serviceWorkerRegistration.register();

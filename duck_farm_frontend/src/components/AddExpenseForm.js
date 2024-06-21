@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getTodayDate } from "../utils/getTodayDate";
+import eventBus from "../utils/eventBus";
+
 
 const AddExpenseForm = ({ onClose, onExpenseAdded }) => {
   const [formData, setFormData] = useState({
@@ -59,7 +61,28 @@ const AddExpenseForm = ({ onClose, onExpenseAdded }) => {
     e.preventDefault();
     setIsConfirming(true); // Show confirmation page
   };
-
+  const clearBackendCache = async () => {
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/expenses/clear_cache/",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      if (response.ok) {
+        const result = await response.json();
+        console.log(result.message);
+      } else {
+        console.error("Failed to clear cache");
+      }
+    } catch (error) {
+      console.error("Error clearing cache:", error);
+    }
+  };
   const handleConfirm = async () => {
     try {
       const response = await fetch("http://127.0.0.1:8000/api/expenses/", {
@@ -76,6 +99,11 @@ const AddExpenseForm = ({ onClose, onExpenseAdded }) => {
       });
 
       if (response.ok) {
+        console.log("Expense added successfully");
+        eventBus.dispatch("newExpenseDataAdded", { newExpenseDataAdded: true });
+        await clearBackendCache();
+
+
         onExpenseAdded();
       } else {
         console.error("Failed to add expense");

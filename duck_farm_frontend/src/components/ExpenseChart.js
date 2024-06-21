@@ -33,12 +33,14 @@ const ExpenseChart = () => {
   const [view, setView] = useState("monthly");
 
   useEffect(() => {
-    fetchTotalMonthlyPages();
-  }, []);
+    const fetchData = async () => {
+      await fetchTotalMonthlyPagesAndData();
+    };
 
-  useEffect(() => {
+    fetchData();
+
     const handleNewExpenseDataAdded = () => {
-      fetchTotalMonthlyPages();
+      fetchData();
     };
 
     eventBus.on("newExpenseDataAdded", handleNewExpenseDataAdded);
@@ -48,9 +50,8 @@ const ExpenseChart = () => {
     };
   }, []);
 
-  const fetchTotalMonthlyPages = async () => {
+  const fetchTotalMonthlyPagesAndData = async () => {
     try {
-      // Replace the API endpoint with your actual endpoint for monthly expense view
       const response = await fetch(
         `http://127.0.0.1:8000/api/expenses/monthly_view/`,
         {
@@ -62,18 +63,15 @@ const ExpenseChart = () => {
       const result = await response.json();
       setMonthlyTotalPages(result.count);
       setMonthlyPage(result.count);
-     
+
+      await fetchMonthlyData(result.count);
     } catch (error) {
       console.error("Error fetching total monthly expenses:", error);
     }
   };
-  useEffect(() => {
-    if (monthlyTotalPages > 0) fetchMonthlyData(monthlyPage);
-  }, [monthlyPage, monthlyTotalPages]);
 
   const fetchMonthlyData = async (page) => {
     try {
-      // Replace the API endpoint with your actual endpoint for monthly expense view
       const response = await fetch(
         `http://127.0.0.1:8000/api/expenses/monthly_view/?page=${page}`,
         {
@@ -84,7 +82,6 @@ const ExpenseChart = () => {
       );
       const result = await response.json();
       setMonthlyData(result.results);
-      setMonthlyTotalPages(result.count);
       setMonthlyDateRange(
         `From ${result.month_range.start} to ${result.month_range.end}`
       );
@@ -177,6 +174,7 @@ const ExpenseChart = () => {
       </div>
     );
   };
+
   const handleViewChange = (e) => {
     setView(e.target.value);
     switch (e.target.value) {
@@ -188,8 +186,9 @@ const ExpenseChart = () => {
     }
   };
 
-  const handleMonthlyPageChange = (page) => {
+  const handleMonthlyPageChange = async (page) => {
     setMonthlyPage(page);
+    await fetchMonthlyData(page);
   };
 
   return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Line,Bar } from "react-chartjs-2";
+import { Line, Bar } from "react-chartjs-2";
 import eventBus from "../utils/eventBus";
 import {
   Chart as ChartJS,
@@ -42,21 +42,19 @@ const EggCollectionChart = () => {
   const [monthlyTotalPages, setMonthlyTotalPages] = useState(1);
   const [monthlyDateRange, setMonthlyDateRange] = useState("");
 
-  const [view, setView] = useState("daily"); 
+  const [view, setView] = useState("daily");
 
   useEffect(() => {
-    fetchTotalDailyPages();
-    fetchTotalMonthlyPages();
-  }, []);
-
-  useEffect(() => {
-    const handleNewEggDataAdded = () => {
-      fetchTotalDailyPages();
-      fetchTotalMonthlyPages();
+    const fetchData = async () => {
+      await fetchTotalDailyPages();
+      await fetchTotalMonthlyPages();
     };
+    fetchData();
 
+    const handleNewEggDataAdded = () => {
+      fetchData();
+    };
     eventBus.on("newEggDataAdded", handleNewEggDataAdded);
-
     return () => {
       eventBus.remove("newEggDataAdded", handleNewEggDataAdded);
     };
@@ -77,10 +75,8 @@ const EggCollectionChart = () => {
       setDailyTotalPages(result.count);
 
       setDailyPage(result.count);
-      fetchDailyData(result.count); 
-      setDailyDateRange(
-        `From ${result.date_range.start} to ${result.date_range.end}`
-      );
+      await fetchDailyData(result.count);
+      
     } catch (error) {
       console.error("Error fetching total pages:", error);
     }
@@ -98,22 +94,13 @@ const EggCollectionChart = () => {
       const result = await response.json();
       setMonthlyTotalPages(result.count);
       setMonthlyPage(result.count);
-      fetchMonthlyData(result.count); 
-      setMonthlyDateRange(
-        `From ${result.date_range.start} to ${result.date_range.end}`
-      );
+      await fetchMonthlyData(result.count);
+      
     } catch (error) {
       console.error("Error fetching total pages:", error);
     }
   };
 
-  useEffect(() => {
-    fetchDailyData(dailyPage);
-  }, [dailyPage]);
-
-  useEffect(() => {
-    fetchMonthlyData(monthlyPage);
-  }, [monthlyPage]); 
 
   const fetchDailyData = async (page) => {
     try {
@@ -157,13 +144,16 @@ const EggCollectionChart = () => {
     }
   };
 
-  const handleDailyPageChange = (page) => {
+  const handleDailyPageChange = async (page) => {
+
     setDailyPage(page);
+    await fetchDailyData(page);
   };
 
-  const handleMonthlyPageChange = (page) => {
+  const handleMonthlyPageChange = async (page) => {
     setMonthlyPage(page);
-  };  
+    await fetchMonthlyData(page);
+  };
 
   useEffect(() => {
     if (dailyData.length > 0) {
@@ -202,42 +192,43 @@ const EggCollectionChart = () => {
       setMonthlyChartData({ labels: [], datasets: [] });
     }
   }, [monthlyData]);
-  
 
   const renderChart = () => {
     switch (view) {
       case "daily":
-        return (<Line data={dailyChartData} 
-          options={{
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  title: (tooltipItem) =>
-                      
+        return (
+          <Line
+            data={dailyChartData}
+            options={{
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    title: (tooltipItem) =>
                       `${dailyData[tooltipItem[0].dataIndex].date}`,
-                  label: (tooltipItem) =>
-                    `Egg Collection: ${tooltipItem.raw}` 
+                    label: (tooltipItem) =>
+                      `Egg Collection: ${tooltipItem.raw}`,
+                  },
                 },
               },
-            },
-          }}
-        />
-      );
+            }}
+          />
+        );
       case "monthly":
-        return (<Bar data={monthlyChartData} 
-          options={{
-            plugins: {
-              tooltip: {
-                callbacks: {
-                
-                  label: (tooltipItem) =>
-                    `Monthly Egg Collection: ${tooltipItem.raw}` // Adding ₹ symbol
+        return (
+          <Bar
+            data={monthlyChartData}
+            options={{
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: (tooltipItem) =>
+                      `Monthly Egg Collection: ${tooltipItem.raw}`, // Adding ₹ symbol
+                  },
                 },
               },
-            },
-          }}
-        />
-      );      
+            }}
+          />
+        );
       default:
         return null;
     }
@@ -258,7 +249,7 @@ const EggCollectionChart = () => {
         totalPages = monthlyTotalPages;
         currentPage = monthlyPage;
         handlePageChange = handleMonthlyPageChange;
-        break;     
+        break;
       default:
         totalPages = 1;
         currentPage = 1;
@@ -292,14 +283,14 @@ const EggCollectionChart = () => {
   };
 
   const handleViewChange = (e) => {
-    setView(e.target.value);    
+    setView(e.target.value);
     switch (e.target.value) {
       case "daily":
         setDailyPage(dailyTotalPages);
         break;
       case "monthly":
         setMonthlyPage(monthlyTotalPages);
-        break;      
+        break;
       default:
         break;
     }
