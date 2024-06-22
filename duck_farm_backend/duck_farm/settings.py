@@ -114,11 +114,19 @@ DATABASES = {
     }
 }
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",  # Using the existing Redis server on port 6379
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "IGNORE_EXCEPTIONS": True,  # This helps to prevent errors when Redis is down
+        }
     }
 }
+
+# Optional: Configure session engine to use Redis
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 
 
 # Password validation

@@ -488,7 +488,7 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
 
         cache_key = 'monthly_egg_collection_data'
         cached_data = cache.get(cache_key)
-        if cached_data:
+        if cached_data:            
             data = cached_data
         else:
             queryset = self.queryset.order_by('date')

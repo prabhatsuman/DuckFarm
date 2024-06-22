@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  duck_farm_backend:
+    build:
+      context: ./duck_farm_backend
+    container_name: duck_farm_backend
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./duck_farm_backend:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+  duck_farm_frontend:
+    build:
+      context: ./duck_farm_frontend
+    container_name: duck_farm_frontend
+    volumes:
+      - ./duck_farm_frontend:/app
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+
+  db:
+    image: postgres:13
+    container_name: duck_farm_db
+    volumes:
+      - duck_farm_postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: farmmanagement
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+  redis:
+    image: redis:6
+    container_name: duck_farm_redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  duck_farm_postgres_data:
