@@ -4,6 +4,7 @@ import AddDealerForm from "./AddDealerForm";
 import EditDealerForm from "./EditDealerForm";
 import DeleteDealerConfirmation from "./DeleteDealerConfirmation";
 import { FiEdit, FiTrash, FiPlus, FiDownload } from "react-icons/fi";
+import API_URL from "../config";
 
 const DealerInfo = () => {
   const [dealers, setDealers] = useState([]);
@@ -22,7 +23,7 @@ const DealerInfo = () => {
 
   const fetchDealers = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/dealer_info/", {
+      const response = await fetch(`${API_URL}/api/dealer_info/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },

@@ -7,6 +7,7 @@ import ExpenseChart from "./ExpenseChart";
 import EarningChart from "./EarningChart";
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
+
 const Home = () => {
   const [currentPage, setCurrentPage] = useState(1);
 

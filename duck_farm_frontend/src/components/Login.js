@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API_URL from "../config";
 
 const Login = ({ handleClose }) => {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ const Login = ({ handleClose }) => {
     const { email, password } = loginState;
 
     axios
-      .post("http://127.0.0.1:8000/api/login/", {
+      .post(`${API_URL}/api/login/`, {
         email: email,
         password: password,
       })

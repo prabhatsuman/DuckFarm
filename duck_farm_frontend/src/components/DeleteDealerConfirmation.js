@@ -1,9 +1,10 @@
 import React from 'react';
+import API_URL from '../config';
 
 const DeleteDealerConfirmation = ({ dealer, onClose, onDealerDeleted }) => {
     const handleDelete = async () => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/dealer_info/${dealer.id}/`, {
+            const response = await fetch(`${API_URL}/api/dealer_info/${dealer.id}/`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

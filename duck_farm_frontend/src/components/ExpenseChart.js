@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
 import eventBus from "../utils/eventBus";
+import API_URL from "../config";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -53,7 +54,7 @@ const ExpenseChart = () => {
   const fetchTotalMonthlyPagesAndData = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/expenses/monthly_view/`,
+        `${API_URL}/api/expenses/monthly_view/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -73,7 +74,7 @@ const ExpenseChart = () => {
   const fetchMonthlyData = async (page) => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/expenses/monthly_view/?page=${page}`,
+        `${API_URL}/api/expenses/monthly_view/?page=${page}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,

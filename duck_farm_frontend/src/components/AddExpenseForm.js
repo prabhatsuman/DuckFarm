@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getTodayDate } from "../utils/getTodayDate";
 import eventBus from "../utils/eventBus";
+import API_URL from "../config";
 
 
 const AddExpenseForm = ({ onClose, onExpenseAdded }) => {
@@ -19,7 +20,7 @@ const AddExpenseForm = ({ onClose, onExpenseAdded }) => {
     // Fetch dealers from the API
     const fetchDealers = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/dealer_info/", {
+        const response = await fetch(`${API_URL}/api/dealer_info/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
@@ -64,7 +65,7 @@ const AddExpenseForm = ({ onClose, onExpenseAdded }) => {
   const clearBackendCache = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/clear_cache/",
+        `${API_URL}/api/clear_cache/`,
         {
           method: "GET",
           headers: {
@@ -85,7 +86,7 @@ const AddExpenseForm = ({ onClose, onExpenseAdded }) => {
   };
   const handleConfirm = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/expenses/", {
+      const response = await fetch(`${API_URL}/api/expenses/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

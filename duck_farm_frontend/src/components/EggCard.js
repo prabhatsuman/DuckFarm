@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiPlus } from 'react-icons/fi'; // Import icons from react-icons library
 import AddEggForm from './AddEggForm'; // Import the AddEggForm component
+import API_URL from '../config';
 
 const EggCard = ({ logoUrl }) => {
     const [totalEggs, setTotalEggs] = useState(0);
@@ -14,7 +15,7 @@ const EggCard = ({ logoUrl }) => {
 
     const fetchTotalEggs = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/egg_stock/total_stock/', {
+            const response = await fetch(`${API_URL}/api/egg_stock/total_stock/`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                 }

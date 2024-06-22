@@ -4,6 +4,7 @@ import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import AddEggForm from "./AddEggForm";
 import { FiPlus } from "react-icons/fi";
+import API_URL from "../config";
 
 const localizer = momentLocalizer(moment);
 
@@ -14,7 +15,7 @@ const EggCollectionCalendar = () => {
 
   const fetchEggCollections = async (year, month) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/egg_stock/`, {
+      const response = await fetch(`${API_URL}/api/egg_stock/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },

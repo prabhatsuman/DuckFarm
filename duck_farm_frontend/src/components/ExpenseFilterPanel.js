@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import _ from 'lodash';
+import API_URL from "../config";
 
 const ExpenseFilterPanel = ({ onFilterChange, totalAmount }) => {
   const [filters, setFilters] = useState({
@@ -18,7 +19,7 @@ const ExpenseFilterPanel = ({ onFilterChange, totalAmount }) => {
   useEffect(() => {
     const fetchExpenseTypes = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/expenses/expense_types/", {
+        const response = await fetch(`${API_URL}/api/expenses/expense_types/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
@@ -37,7 +38,7 @@ const ExpenseFilterPanel = ({ onFilterChange, totalAmount }) => {
 
     const fetchDealers = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/expenses/dealer_list/", {
+        const response = await fetch(`${API_URL}/api/expenses/dealer_list/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },

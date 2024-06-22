@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { getTodayDate } from "../utils/getTodayDate";
 import eventBus from "../utils/eventBus";
+import API_URL from "../config";
 
 const AddEggForm = ({ onClose, onEggAdded }) => {
   const [formData, setFormData] = useState({
@@ -14,7 +15,7 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
     if (formData.date) {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/egg_stock/by_date/?date=${formData.date}`,
+          `${API_URL}/api/egg_stock/by_date/?date=${formData.date}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -43,7 +44,7 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
   const clearBackendCache = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/egg_stock/clear_cache/",
+        `${API_URL}/api/egg_stock/clear_cache/`,
         {
           method: "GET",
           headers: {
@@ -67,7 +68,7 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
     e.preventDefault();
     if (isConfirming) {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/egg_stock/", {
+        const response = await fetch(`${API_URL}/api/egg_stock/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

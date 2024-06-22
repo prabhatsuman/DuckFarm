@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getTodayDate } from '../utils/getTodayDate';
+import API_URL from '../config';
 
 const EditStockPopup = ({ item, stockType, onClose, onUpdate }) => {
   const [formData, setFormData] = useState({ ...item });
@@ -16,7 +17,7 @@ const EditStockPopup = ({ item, stockType, onClose, onUpdate }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/stocks/${stockType}/${item.id}/`, {
+      const response = await fetch(`${API_URL}/api/stocks/${stockType}/${item.id}/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

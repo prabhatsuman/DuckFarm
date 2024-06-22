@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getTodayDate } from "../utils/getTodayDate";
 import eventBus from "../utils/eventBus";
+import API_URL from "../config";
 
 const AddStockPopup = ({ onClose, onCreate }) => {
   const stockTypes = ["feed", "medicine", "other"];
@@ -29,7 +30,7 @@ const AddStockPopup = ({ onClose, onCreate }) => {
   }, []);
   const fetchDealers = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/dealer_info/", {
+      const response = await fetch(`${API_URL}/api/dealer_info/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
@@ -43,7 +44,7 @@ const AddStockPopup = ({ onClose, onCreate }) => {
   const clearBackendCache = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/clear_cache/",
+        `${API_URL}/api/clear_cache/`,
         {
           method: "GET",
           headers: {
@@ -89,7 +90,7 @@ const AddStockPopup = ({ onClose, onCreate }) => {
       }
 
       const response = await fetch(
-        `http://127.0.0.1:8000/api/stocks/${selectedStockType}/`,
+        `${API_URL}/api/stocks/${selectedStockType}/`,
         {
           method: "POST",
           headers: {

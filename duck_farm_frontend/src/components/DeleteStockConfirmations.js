@@ -1,9 +1,10 @@
 import React from 'react';
+import API_URL from '../config';
 
 const DeleteStockConfirmation = ({ stockType, item, onClose, onStockDeleted }) => {
     const handleDelete = async () => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/stocks/${stockType}/${item.id}/`, {
+            const response = await fetch(`${API_URL}/api/stocks/${stockType}/${item.id}/`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

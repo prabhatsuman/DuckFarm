@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API_URL from "../config";
 
 const Signup = ({ handleClose }) => {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ const Signup = ({ handleClose }) => {
     const { firstName, lastName, username, email, password } = signupState;
 
     axios
-      .post("http://127.0.0.1:8000/api/register/", {
+      .post(`${API_URL}/api/register/`, {
         first_name: firstName,
         last_name: lastName,
         username: username,

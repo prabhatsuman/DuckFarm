@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import API_URL from '../config';
 
 const AddDealerForm = ({ onClose, onDealerAdded }) => {
   const [formData, setFormData] = useState({
@@ -23,7 +24,7 @@ const AddDealerForm = ({ onClose, onDealerAdded }) => {
     e.preventDefault();
     if (isConfirming) {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/dealer_info/', {
+        const response = await fetch(`${API_URL}/api/dealer_info/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

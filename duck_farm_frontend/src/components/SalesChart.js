@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Line, Bar } from "react-chartjs-2";
+import API_URL from "../config";
 import eventBus from "../utils/eventBus";
 import {
   Chart as ChartJS,
@@ -67,7 +68,7 @@ const SalesChart = () => {
     try {
       // Replace the API endpoint with your actual endpoint for daily view
       const response = await fetch(
-        `http://127.0.0.1:8000/api/sales/daily_view/`,
+        `${API_URL}/api/sales/daily_view/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -89,7 +90,7 @@ const SalesChart = () => {
     try {
       // Replace the API endpoint with your actual endpoint for monthly view
       const response = await fetch(
-        `http://127.0.0.1:8000/api/sales/monthly_view/`,
+        `${API_URL}/api/sales/monthly_view/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -111,7 +112,7 @@ const SalesChart = () => {
     try {
       // Replace the API endpoint with your actual endpoint for daily view
       const response = await fetch(
-        `http://127.0.0.1:8000/api/sales/daily_view/?page=${page}`,
+        `${API_URL}/api/sales/daily_view/?page=${page}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -133,7 +134,7 @@ const SalesChart = () => {
     try {
       // Replace the API endpoint with your actual endpoint for monthly view
       const response = await fetch(
-        `http://127.0.0.1:8000/api/sales/monthly_view/?page=${page}`,
+        `${API_URL}/api/sales/monthly_view/?page=${page}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FiInfo, FiPlus } from 'react-icons/fi'; // Import icons from react-icons library
 import AddDuckForm from './AddDuckForm'; // Import the AddDuckForm component
 import DuckInfoPopup from './DuckInfoPopup'; // Import the DuckInfoPopup component
+import API_URL from '../config';
 
 const DuckCard = ({ logoUrl }) => {
     const [totalDucks, setTotalDucks] = useState(0);
@@ -16,7 +17,7 @@ const DuckCard = ({ logoUrl }) => {
 
     const fetchTotalDucks = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/duck_info/total/', {
+            const response = await fetch(`${API_URL}/api/duck_info/total/`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                 }

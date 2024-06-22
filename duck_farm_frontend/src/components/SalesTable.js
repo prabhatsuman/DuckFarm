@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import { FiDownload, FiPlus } from "react-icons/fi";
 import SalesFilterPanel from "./SalesFilterPanel";
 import AddSalesModal from "./AddSalesForm";
+import API_URL from "../config";
 
 const SalesTable = () => {
   const [sales, setSales] = useState([]);
@@ -35,7 +36,7 @@ const SalesTable = () => {
 
   const fetchSales = async () => {
     try {
-      const apiUrl = "http://127.0.0.1:8000/api/sales/";
+      const apiUrl = `${API_URL}/api/sales/`;
 
       // Define query parameters with initial values
       const queryParams = {

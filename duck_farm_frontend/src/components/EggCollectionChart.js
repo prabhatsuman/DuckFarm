@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Line, Bar } from "react-chartjs-2";
 import eventBus from "../utils/eventBus";
+import API_URL from "../config";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -64,7 +65,7 @@ const EggCollectionChart = () => {
   const fetchTotalDailyPages = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/egg_stock/daily_view/`,
+        `${API_URL}/api/egg_stock/daily_view/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -84,7 +85,7 @@ const EggCollectionChart = () => {
   const fetchTotalMonthlyPages = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/egg_stock/monthly_view/`,
+        `${API_URL}/api/egg_stock/monthly_view/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -105,7 +106,7 @@ const EggCollectionChart = () => {
   const fetchDailyData = async (page) => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/egg_stock/daily_view/?page=${page}`,
+        `${API_URL}/api/egg_stock/daily_view/?page=${page}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -126,7 +127,7 @@ const EggCollectionChart = () => {
   const fetchMonthlyData = async (page) => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/egg_stock/monthly_view/?page=${page}`,
+        `${API_URL}/api/egg_stock/monthly_view/?page=${page}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,

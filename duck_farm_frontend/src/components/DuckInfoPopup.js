@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FiMinus } from 'react-icons/fi';
+import API_URL from '../config';
 
 const DuckInfoPopup = ({ onClose }) => {
     const [duckInfo, setDuckInfo] = useState([]);
@@ -10,7 +11,7 @@ const DuckInfoPopup = ({ onClose }) => {
 
     const fetchDuckInfo = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/duck_info/', {
+            const response = await fetch(`${API_URL}/api/duck_info/`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                 }
@@ -55,7 +56,7 @@ const DuckInfoPopup = ({ onClose }) => {
 
         try {
             // Send PATCH request to update only male_count or female_count in database
-            const response = await fetch(`http://127.0.0.1:8000/api/duck_info/${duckId}/`, {
+            const response = await fetch(`${API_URL}/api/duck_info/${duckId}/`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

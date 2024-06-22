@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getTodayDate } from "../utils/getTodayDate";
+import API_URL from "../config";
 
 const AddDuckForm = ({ onClose, onDuckAdded }) => {
   const [formData, setFormData] = useState({
@@ -21,7 +22,7 @@ const AddDuckForm = ({ onClose, onDuckAdded }) => {
 
   const fetchBreeds = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/duck_info/", {
+      const response = await fetch(`${API_URL}/api/duck_info/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
@@ -35,7 +36,7 @@ const AddDuckForm = ({ onClose, onDuckAdded }) => {
 
   const fetchDealers = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/dealer_info/", {
+      const response = await fetch(`${API_URL}/api/dealer_info/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
@@ -75,7 +76,7 @@ const AddDuckForm = ({ onClose, onDuckAdded }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/duck_info/", {
+      const response = await fetch(`${API_URL}/api/duck_info/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

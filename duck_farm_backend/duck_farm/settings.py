@@ -102,17 +102,19 @@ WSGI_APPLICATION = 'duck_farm.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
+import os
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'farmmanagement',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': 'localhost',
+        'HOST': 'db',  # Service name of the PostgreSQL container
         'PORT': '5432',
     }
 }
+
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",

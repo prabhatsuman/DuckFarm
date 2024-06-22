@@ -4,6 +4,7 @@ import AddStockPopup from "./AddStockPopup"; // Adjust the import path as per yo
 import EditStockPopup from "./EditStockPopup"; // Import the EditStockPopup component
 import DeleteStockConfirmation from "./DeleteStockConfirmations"; // Import the DeleteStockConfirmation component
 import * as XLSX from "xlsx";
+import API_URL from "../config";
 
 const StockTable = () => {
   const stockTypes = ["feed", "medicine", "other"];
@@ -37,7 +38,7 @@ const StockTable = () => {
   const fetchItems = async (stockType) => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/stocks/${stockType}/`,
+        `${API_URL}/api/stocks/${stockType}/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,

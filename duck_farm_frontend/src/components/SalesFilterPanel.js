@@ -1,5 +1,6 @@
 import React, { useState, useEffect,useCallback } from "react";
 import _ from 'lodash';
+import API_URL from "../config";
 
 const SalesFilterPanel = ({ onFilterChange,totalAmount }) => {
   const [filters, setFilters] = useState({
@@ -16,7 +17,7 @@ const SalesFilterPanel = ({ onFilterChange,totalAmount }) => {
   useEffect(() => {
     const fetchDealers = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/sales/dealer_list/", {
+        const response = await fetch(`${API_URL}/api/sales/dealer_list/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },

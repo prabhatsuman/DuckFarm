@@ -41,7 +41,16 @@ services:
     image: redis:6
     container_name: duck_farm_redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: duck_farm_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: prabhat@gmail.com   # Set your pgAdmin login email
+      PGADMIN_DEFAULT_PASSWORD: postgres         # Set your pgAdmin login password
+    ports:
+      - "5050:80"  # Map pgAdmin port 80 to host port 5050 (adjust as needed)
 
 volumes:
   duck_farm_postgres_data:

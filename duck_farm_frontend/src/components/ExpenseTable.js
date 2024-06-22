@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import { FiDownload, FiPlus } from "react-icons/fi";
 import ExpenseFilterPanel from "./ExpenseFilterPanel";
 import AddExpenseModal from "./AddExpenseForm";
+import API_URL from "../config";
 
 const ExpenseTable = () => {
   const [expenses, setExpenses] = useState([]);
@@ -37,7 +38,7 @@ const ExpenseTable = () => {
 
   const fetchExpenses = async () => {
     try {
-      const apiUrl = "http://127.0.0.1:8000/api/expenses/";
+      const apiUrl = `${API_URL}/api/expenses/`;
 
       const queryParams = {
         page: currentPage,
