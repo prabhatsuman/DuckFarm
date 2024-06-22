@@ -5,27 +5,17 @@ services:
     build:
       context: ./duck_farm_backend
     container_name: duck_farm_backend
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./duck_farm_backend:/app
-    ports:
-      - "8000:8000"
     env_file:
       - .env
     depends_on:
       - db
       - redis
-
-  duck_farm_frontend:
-    build:
-      context: ./duck_farm_frontend
-    container_name: duck_farm_frontend
-    volumes:
-      - ./duck_farm_frontend:/app
     ports:
-      - "3000:3000"
-    stdin_open: true
-    tty: true
+      - "8000:8000"
+    networks:
+      - duck_farm_network
 
   db:
     image: postgres:13
@@ -36,21 +26,59 @@ services:
       POSTGRES_DB: farmmanagement
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    networks:
+      - duck_farm_network
 
   redis:
     image: redis:6
     container_name: duck_farm_redis
-    ports:
-      - "6380:6379"
+    networks:
+      - duck_farm_network
+    
 
   pgadmin:
     image: dpage/pgadmin4
     container_name: duck_farm_pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: prabhat@gmail.com   # Set your pgAdmin login email
-      PGADMIN_DEFAULT_PASSWORD: postgres         # Set your pgAdmin login password
+      PGADMIN_DEFAULT_EMAIL: prabhat@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: postgres
     ports:
-      - "5050:80"  # Map pgAdmin port 80 to host port 5050 (adjust as needed)
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - duck_farm_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: duck_farm_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - react_build:/usr/share/nginx/html  # Mount the volume here
+    depends_on:
+      - duck_farm_backend
+      - duck_farm_frontend
+    networks:
+      - duck_farm_network
+
+  duck_farm_frontend:
+    build:
+      context: ./duck_farm_frontend
+    container_name: duck_farm_frontend
+    volumes:
+      - ./duck_farm_frontend:/app
+      - react_build:/app/build  # Mount the volume here
+    networks:
+      - duck_farm_network
+    ports:
+      - "3000:3000"
+
+networks:
+  duck_farm_network:
+    driver: bridge
 
 volumes:
   duck_farm_postgres_data:
+  react_build:  # Declare the volume here

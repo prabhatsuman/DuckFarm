@@ -1,9 +1,14 @@
-#use the official pyhton 3.10 Alpine image
+# Use the official Python 3.10 Alpine image
 FROM python:3.10-alpine
 
 # Set environment variables to avoid writing .pyc files and buffering
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+
+# Install dependencies
+RUN apk update \
+    && apk add postgresql-dev gcc python3-dev musl-dev \
+    && apk add jpeg-dev zlib-dev
 
 # Create and set the working directory
 WORKDIR /app
@@ -19,4 +24,4 @@ COPY . /app/
 ENV DJANGO_SETTINGS_MODULE=duck_farm.settings
 
 # Run the Django server
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:8000 duck_farm.wsgi:application"]

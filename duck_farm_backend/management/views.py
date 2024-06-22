@@ -585,6 +585,7 @@ class SalesViewSet(viewsets.ModelViewSet):
         cached_data = cache.get(cache_key)
 
         if cached_data:
+            print("from cached data")
             data = cached_data
         else:
             queryset = self.queryset.order_by('date')
