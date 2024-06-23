@@ -10,7 +10,7 @@ RUN npm install
 
 # Copy the project files
 COPY . .
-ENV NODE_OPTIONS=--max_old_space_size=512
+
 # Build the React app
 RUN npm run build
 
