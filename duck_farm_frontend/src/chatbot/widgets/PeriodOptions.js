@@ -5,7 +5,7 @@ const PeriodOptions = (props) => {
     { text: "Today", handler: () => props.actionProvider.handlePeriodSelection("today","Today"), id: 1 },
     { text: "This Week", handler: () => props.actionProvider.handlePeriodSelection("this_week", "This Week"), id: 2 },
     { text: "This Month", handler: () => props.actionProvider.handlePeriodSelection("this_month", "This Month"), id: 3 },
-    { text: "Last Week", handler: () => props.actionProvider.handlePeriodSelection("last_week", "This Month"), id: 4 },
+    { text: "Last Week", handler: () => props.actionProvider.handlePeriodSelection("last_week", "Last Week"), id: 4 },
     { text: "Last Month", handler: () => props.actionProvider.handlePeriodSelection("last_month","Last Month"), id: 5 },
     { text: "Last 3 Months", handler: () => props.actionProvider.handlePeriodSelection("last_3_months", "Last 3 Months"), id: 6 },
     { text: "Last 6 Months", handler: () => props.actionProvider.handlePeriodSelection("last_6_months","Last 6 Months"), id: 7 },

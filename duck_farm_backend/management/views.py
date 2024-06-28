@@ -836,7 +836,7 @@ class ChatbotView(APIView):
                 end_date = self.PERIOD_CHOICES[selected_period]['end_date']()
                 queryset = queryset.filter(date__range=[start_date, end_date])
                 total_eggs = queryset.aggregate(total_eggs=Sum('quantity'))['total_eggs'] or 0
-                return Response({'data': f'{total_eggs} collected {self.mapping[selected_period]}'})
+                return Response({'data': f'{total_eggs} eggs collected {self.mapping[selected_period]}'})
         
         elif selected_type == 'eggs_sold':
             queryset = Sales.objects.all()
@@ -845,6 +845,6 @@ class ChatbotView(APIView):
                 end_date = self.PERIOD_CHOICES[selected_period]['end_date']()
                 queryset = queryset.filter(date__range=[start_date, end_date])
                 total_eggs = queryset.aggregate(total_eggs=Sum('quantity'))['total_eggs'] or 0
-                return Response({'data': f'{total_eggs} sold {self.mapping[selected_period]}'})
+                return Response({'data': f'{total_eggs} eggs sold {self.mapping[selected_period]}'})
         
         return Response({'error': 'Invalid type or period'}, status=400)
