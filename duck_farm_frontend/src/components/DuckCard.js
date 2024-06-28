@@ -1,133 +1,133 @@
-import React, { useState, useEffect } from 'react';
-import { FiInfo, FiPlus } from 'react-icons/fi'; // Import icons from react-icons library
-import AddDuckForm from './AddDuckForm'; // Import the AddDuckForm component
-import DuckInfoPopup from './DuckInfoPopup'; // Import the DuckInfoPopup component
+import React, { useState, useEffect } from "react";
+import { FiInfo, FiPlus, FiChevronDown } from "react-icons/fi"; // Import icons from react-icons library
+import AddDuckForm from "./AddDuckForm"; // Import the AddDuckForm component
+import DuckInfoPopup from "./DuckInfoPopup"; // Import the DuckInfoPopup component
 
 const DuckCard = ({ logoUrl }) => {
-    const [totalDucks, setTotalDucks] = useState(0);
-    const [hovered, setHovered] = useState(false);
-    const [hoveredButton, setHoveredButton] = useState(null);
-    const [showAddDuckForm, setShowAddDuckForm] = useState(false);
-    const [showDuckInfoPopup, setShowDuckInfoPopup] = useState(false); // State to toggle DuckInfoPopup
+  // State variables
+  const [totalDucks, setTotalDucks] = useState(0);
+  const [showAddDuckForm, setShowAddDuckForm] = useState(false);
+  const [showDuckInfoPopup, setShowDuckInfoPopup] = useState(false);
+  const [showOptions, setShowOptions] = useState(false); // State to toggle options visibility
 
-    useEffect(() => {
-        fetchTotalDucks();
-    }, []);
+  // Fetch total ducks on component mount
+  useEffect(() => {
+    fetchTotalDucks();
+  }, []);
 
-    const fetchTotalDucks = async () => {
-        try {
-            const response = await fetch('http://127.0.0.1:8000/api/duck_info/total/', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setTotalDucks(data.total);
-            } else {
-                console.error('Failed to fetch total ducks');
-            }
-        } catch (error) {
-            console.error('Error fetching total ducks:', error);
+  // Function to fetch total ducks
+  const fetchTotalDucks = async () => {
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/duck_info/total/",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
         }
-    };
+      );
 
-    const handleMouseEnter = () => {
-        setHovered(true);
-    };
+      if (response.ok) {
+        const data = await response.json();
+        setTotalDucks(data.total);
+      } else {
+        console.error("Failed to fetch total ducks");
+      }
+    } catch (error) {
+      console.error("Error fetching total ducks:", error);
+    }
+  };
 
-    const handleMouseLeave = () => {
-        setHovered(false);
-    };
+  // Toggle options menu visibility
+  const handleToggleOptions = () => {
+    setShowOptions(!showOptions);
+  };
 
-    const handleButtonMouseEnter = (buttonType) => {
-        setHoveredButton(buttonType);
-    };
+  // Handle adding ducks
+  const handleAddDucks = () => {
+    setShowAddDuckForm(true);
+    setShowOptions(false); // Close options when adding ducks
+  };
 
-    const handleButtonMouseLeave = () => {
-        setHoveredButton(null);
-    };
+  // Handle showing duck info popup
+  const handleShowDuckInfo = () => {
+    setShowDuckInfoPopup(true);
+    setShowOptions(false); // Close options when showing duck info
+  };
 
-    const handleAddDucks = () => {
-        setShowAddDuckForm(true);
-    };
+  // Handle closing duck info popup
+  const handleCloseDuckInfo = () => {
+    setShowDuckInfoPopup(false);
+    fetchTotalDucks(); // Refresh the total ducks count when closing DuckInfoPopup
+  };
 
-    const handleDuckAdded = () => {
-        setShowAddDuckForm(false);
-        fetchTotalDucks(); // Refresh the total ducks count
-    };
+  // Handle clicking outside options menu to close it
+  const handleOutsideClick = (e) => {
+    if (!e.target.closest(".options-container") && !e.target.closest(".options-toggle")) {
+      setShowOptions(false);
+    }
+  };
 
-    const handleShowDuckInfo = () => {
-        setShowDuckInfoPopup(true);
+  // Attach event listener for clicking outside options menu
+  useEffect(() => {
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
     };
+  }, []);
 
-    const handleCloseDuckInfo = () => {
-        setShowDuckInfoPopup(false);
-        fetchTotalDucks(); // Refresh the total ducks count when closing DuckInfoPopup
-    };
-
-    return (
-        <div className="bg-white overflow-hidden shadow rounded-lg relative">
-            <div className="px-4 py-5 sm:p-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                        <img src={logoUrl} alt="Duck Logo" className="object-cover h-16 w-16 mr-3" />
-                    </div>
-                    <div
-                        className="flex flex-col items-end relative justify-center"
-                        onMouseEnter={handleMouseEnter}
-                        onMouseLeave={handleMouseLeave}
-                    >
-                        {!hovered ? (
-                            <div>
-                                <h3 className="text-lg font-medium text-gray-900">Total Ducks</h3>
-                                <p className="mt-2 text-sm text-gray-500 text-right">{totalDucks} ducks</p>
-                            </div>
-                        ) : (
-                            <div className="flex items-center mt-4">
-                                <button
-                                    className="relative flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full hover:bg-blue-600 mr-2"
-                                    onMouseEnter={() => handleButtonMouseEnter('info')}
-                                    onMouseLeave={handleButtonMouseLeave}
-                                    onClick={handleShowDuckInfo} // Show DuckInfoPopup onClick
-                                >
-                                    <FiInfo className="text-lg" />
-                                    {hoveredButton === 'info' && (
-                                        <span className="absolute bottom-8 text-xs bg-yellow-200 text-black py-1 px-3 rounded-lg shadow-lg">
-                                            Additional Info
-                                        </span>
-                                    )}
-                                </button>
-                                <button
-                                    className="relative flex items-center justify-center w-8 h-8 bg-green-500 text-white rounded-full hover:bg-green-600 mr-2"
-                                    onClick={handleAddDucks}
-                                    onMouseEnter={() => handleButtonMouseEnter('add')}
-                                    onMouseLeave={handleButtonMouseLeave}
-                                >
-                                    <FiPlus className="text-lg" />
-                                    {hoveredButton === 'add' && (
-                                        <span className="absolute bottom-8 text-xs bg-yellow-200 text-black py-1 px-3 rounded-lg shadow-lg">
-                                            Add Ducks
-                                        </span>
-                                    )}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-            {showAddDuckForm && (
-                <AddDuckForm
-                    onClose={() => setShowAddDuckForm(false)}
-                    onDuckAdded={handleDuckAdded}
-                />
-            )}
-            {showDuckInfoPopup && (
-                <DuckInfoPopup onClose={handleCloseDuckInfo} />
-            )}
+  // JSX rendering
+  return (
+    <div className="px-4 py-5 sm:p-6 relative">
+      <div className="absolute top-4 right-1 z-20">
+        <button
+          className="text-gray-600 hover:text-gray-800 focus:outline-none options-toggle"
+          onClick={handleToggleOptions}
+        >
+          <FiChevronDown className="text-xs" />
+        </button>
+        {showOptions && (
+          <div className="absolute bg-white border border-gray-200 shadow-lg rounded-lg z-30 options-container" style={{ right: 20, top: 10 }}>
+            <button
+              className="block py-2.5 px-4 rounded hover:bg-gray-100 w-full text-left truncate"
+              onClick={handleShowDuckInfo}
+            >
+              <FiInfo className="inline-block mr-2" /> Additional Info
+            </button>
+            <button
+              className="block py-2.5 px-4 rounded hover:bg-gray-100 w-full text-left truncate"
+              onClick={handleAddDucks}
+            >
+              <FiPlus className="inline-block mr-2" /> Add Ducks
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <img
+            src={logoUrl}
+            alt="Duck Logo"
+            className="object-cover h-16 w-16 mr-3"
+          />
         </div>
-    );
+        <div className="mt-4">
+          <h3 className="text-lg font-medium text-gray-900">Total Ducks</h3>
+          <p className="mt-2 text-sm text-gray-500 text-right">{totalDucks} ducks</p>
+        </div>
+      </div>
+      {showAddDuckForm && (
+        <AddDuckForm
+          onClose={() => setShowAddDuckForm(false)}
+          onDuckAdded={() => {
+            setShowAddDuckForm(false);
+            fetchTotalDucks(); // Refresh the total ducks count
+          }}
+        />
+      )}
+      {showDuckInfoPopup && <DuckInfoPopup onClose={handleCloseDuckInfo} />}
+    </div>
+  );
 };
 
 export default DuckCard;

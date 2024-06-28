@@ -1,10 +1,9 @@
 import './App.css';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import SignupPage from './pages/Signup';
-import LoginPage from './pages/Login';
 import DashboardPage from './pages/Dashboard';
 import HomePage from './pages/HomePage';
 import PrivateRoute from './components/PrivateRoute';
+import Test from './pages/Test';
 
 function App() {
   return (
@@ -13,7 +12,8 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           
-          <Route path="/dashboard" element={<DashboardPage/>} />
+          <Route path="/dashboard/*" element={<DashboardPage/>} />
+          <Route path="/test" element={<Test />} />
         </Routes>
       </BrowserRouter>
     </div>

@@ -20,6 +20,7 @@ const SalesTable = () => {
   const [maxAmount, setMaxAmount] = useState("");
   const [selectedDealer, setSelectedDealer] = useState("");
   const [totalAmount, setTotalAmount] = useState(0);
+  const [totalQauntity, setTotalQauntity] = useState(0);
 
   useEffect(() => {
     fetchSales();
@@ -98,6 +99,7 @@ const SalesTable = () => {
         setTotalPages(data.total_pages);
         // Update totalPages based on API response
         setTotalAmount(data.total_amount); // Update totalAmount based on API response
+        setTotalQauntity(data.total_quantity); // Update totalQauntity based on API response
       } else {
         console.error("Failed to fetch sales");
       }
@@ -161,6 +163,7 @@ const SalesTable = () => {
 
   const handleSalesAdded = () => {
     fetchSales(); // Refresh the sales data after adding new sales
+    toggleAddSalesModal(); // Close the modal after adding sales
   };
 
   const handlePageChange = (pageNumber) => {
@@ -294,6 +297,7 @@ const SalesTable = () => {
         <SalesFilterPanel
           onFilterChange={handleFilterChange}
           totalAmount={totalAmount}
+          totalQauntity={totalQauntity}
         />
       </div>
       {isAddSalesModalOpen && (

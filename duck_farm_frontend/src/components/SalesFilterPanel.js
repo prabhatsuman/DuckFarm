@@ -1,7 +1,7 @@
 import React, { useState, useEffect,useCallback } from "react";
 import _ from 'lodash';
 
-const SalesFilterPanel = ({ onFilterChange,totalAmount }) => {
+const SalesFilterPanel = ({ onFilterChange,totalAmount,totalQauntity }) => {
   const [filters, setFilters] = useState({
     searchTerm: "",
     startDate: null,
@@ -170,6 +170,9 @@ const SalesFilterPanel = ({ onFilterChange,totalAmount }) => {
       </div>
       <div className="mb-4">
         <p className="block text-sm font-medium text-gray-700 mb-1">Total Amount: &#8377;{totalAmount}</p>
+      </div>
+      <div className="mb-4">
+        <p className="block text-sm font-medium text-gray-700 mb-1">Total Eggs Sold: {totalQauntity}</p>
       </div>
       <div>
         <button

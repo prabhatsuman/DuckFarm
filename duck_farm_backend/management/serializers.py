@@ -1,7 +1,7 @@
 # management/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import DuckInfo, Dealer, Expense, FeedStock, MedicineStock, OtherStock, EggStock, DailyEggCollection, Sales
+from .models import DuckInfo, Dealer, Expense, FeedStock, MedicineStock, OtherStock, EggStock, DailyEggCollection, Sales, CurrentFeed
 from datetime import datetime
 from django.db import models
 
@@ -154,3 +154,14 @@ class SalesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sales
         fields = ['id', 'date', 'dealer', 'quantity', 'amount', 'description']
+
+class SalesAddSerializer(serializers.Serializer):
+    dealer = serializers.PrimaryKeyRelatedField(queryset=Dealer.objects.all())
+    quantity = serializers.IntegerField()
+    date=serializers.DateField()
+    price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    
+class CurrentFeedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CurrentFeed
+        fields = '__all__'

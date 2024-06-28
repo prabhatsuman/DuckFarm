@@ -65,7 +65,9 @@ class SalesPagination(PageNumberPagination):
     
     def paginate_queryset(self,queryset,request,view=None):
         self.total_amount = queryset.aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+        self.total_quantity = queryset.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
         return super().paginate_queryset(queryset,request,view)
+    
     
     def get_paginated_response(self,data):
        return Response({
@@ -73,6 +75,7 @@ class SalesPagination(PageNumberPagination):
             'total_pages': self.page.paginator.num_pages,
             'current_page': self.page.number,
             'total_amount': self.total_amount,
+            'total_quantity': self.total_quantity,
             'results': data,
         })
        

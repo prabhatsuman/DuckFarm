@@ -1,106 +1,100 @@
 import React, { useState, useEffect } from 'react';
-import { FiPlus } from 'react-icons/fi'; // Import icons from react-icons library
+import { FiChevronDown, FiPlus } from 'react-icons/fi'; // Import icons from react-icons library
 import AddEggForm from './AddEggForm'; // Import the AddEggForm component
 
 const EggCard = ({ logoUrl }) => {
-    const [totalEggs, setTotalEggs] = useState(0);
-    const [hovered, setHovered] = useState(false);
-    const [hoveredButton, setHoveredButton] = useState(null);
-    const [showAddEggForm, setShowAddEggForm] = useState(false);
+  const [totalEggs, setTotalEggs] = useState(0);
+  const [showAddEggForm, setShowAddEggForm] = useState(false);
+  const [showOptions, setShowOptions] = useState(false); // State to toggle options visibility
 
-    useEffect(() => {
-        fetchTotalEggs();
-    }, []);
+  useEffect(() => {
+    fetchTotalEggs();
+  }, []);
 
-    const fetchTotalEggs = async () => {
-        try {
-            const response = await fetch('http://127.0.0.1:8000/api/egg_stock/total_stock/', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setTotalEggs(data.total_stock);
-            } else {
-                console.error('Failed to fetch total eggs');
-            }
-        } catch (error) {
-            console.error('Error fetching total eggs:', error);
+  const fetchTotalEggs = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/egg_stock/total_stock/', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         }
-    };
+      });
 
-    const handleMouseEnter = () => {
-        setHovered(true);
-    };
+      if (response.ok) {
+        const data = await response.json();
+        setTotalEggs(data.total_stock);
+      } else {
+        console.error('Failed to fetch total eggs');
+      }
+    } catch (error) {
+      console.error('Error fetching total eggs:', error);
+    }
+  };
 
-    const handleMouseLeave = () => {
-        setHovered(false);
-    };
+  const handleToggleOptions = () => {
+    setShowOptions(!showOptions);
+  };
 
-    const handleButtonMouseEnter = (buttonType) => {
-        setHoveredButton(buttonType);
-    };
+  const handleAddEggs = () => {
+    setShowAddEggForm(true);
+    setShowOptions(false); // Close options when adding eggs
+  };
 
-    const handleButtonMouseLeave = () => {
-        setHoveredButton(null);
-    };
+  const handleOutsideClick = (e) => {
+    if (!e.target.closest(".options-container") && !e.target.closest(".options-toggle")) {
+      setShowOptions(false);
+    }
+  };
 
-    const handleAddEggs = () => {
-        setShowAddEggForm(true);
+  useEffect(() => {
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
     };
+  }, []);
 
-    const handleEggAdded = () => {
-        setShowAddEggForm(false);
-        fetchTotalEggs(); // Refresh the total eggs count
-    };
-
-    return (
-        <div className="bg-white overflow-hidden shadow rounded-lg relative">
-            <div className="px-4 py-5 sm:p-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                        <img src={logoUrl} alt="Egg Logo" className="object-cover h-16 w-16 mr-3" />
-                    </div>
-                    <div
-                        className="flex flex-col items-end relative justify-center"
-                        onMouseEnter={handleMouseEnter}
-                        onMouseLeave={handleMouseLeave}
-                    >
-                        {!hovered ? (
-                            <div>
-                                <h3 className="text-lg font-medium text-gray-900 text-wrap">Egg Stock</h3>
-                                <p className="mt-2 text-sm text-gray-500 text-right">{totalEggs} eggs</p>
-                            </div>
-                        ) : (
-                            <div className="flex items-center mt-4">
-                                <button
-                                    className="relative flex items-center justify-center w-8 h-8 bg-green-500 text-white rounded-full hover:bg-green-600 mr-2"
-                                    onClick={handleAddEggs}
-                                    onMouseEnter={() => handleButtonMouseEnter('add')}
-                                    onMouseLeave={handleButtonMouseLeave}
-                                >
-                                    <FiPlus className="text-lg" />
-                                    {hoveredButton === 'add' && (
-                                        <span className="absolute bottom-8 text-xs bg-yellow-200 text-black py-1 px-3 rounded-lg shadow-lg">
-                                            Add Egg Collection
-                                        </span>
-                                    )}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-            {showAddEggForm && (
-                <AddEggForm
-                    onClose={() => setShowAddEggForm(false)}
-                    onEggAdded={handleEggAdded}
-                />
-            )}
+  return (
+    <div className="px-4 py-5 sm:p-6 relative">
+      <div className="absolute top-4 right-1 z-20">
+        <button
+          className="text-gray-600 hover:text-gray-800 focus:outline-none options-toggle"
+          onClick={handleToggleOptions}
+        >
+          <FiChevronDown className="text-xs" />
+        </button>
+        {showOptions && (
+          <div
+            className="absolute bg-white border border-gray-200 shadow-lg rounded-lg z-30 options-container"
+            style={{ right: 20, top: 10 }}
+          >
+            <button
+              className="block py-2.5 px-4 rounded hover:bg-gray-100 w-full text-left truncate"
+              onClick={handleAddEggs}
+            >
+              <FiPlus className="inline-block mr-2" /> Add Eggs
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <img src={logoUrl} alt="Egg Logo" className="object-cover h-16 w-16 mr-3" />
         </div>
-    );
+        <div className="mt-4">
+          <h3 className="text-lg font-medium text-gray-900">Egg Stock</h3>
+          <p className="mt-2 text-sm text-gray-500 text-right">{totalEggs} eggs</p>
+        </div>
+      </div>
+      {showAddEggForm && (
+        <AddEggForm
+          onClose={() => setShowAddEggForm(false)}
+          onEggAdded={() => {
+            setShowAddEggForm(false);
+            fetchTotalEggs(); // Refresh the total eggs count
+          }}
+        />
+      )}
+    </div>
+  );
 };
 
 export default EggCard;

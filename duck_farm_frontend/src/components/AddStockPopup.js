@@ -171,7 +171,7 @@ const AddStockPopup = ({ onClose, onCreate }) => {
                 htmlFor="price"
                 className="block text-sm font-medium text-gray-700"
               >
-                Price
+                Total Price
               </label>
               <input
                 type="number"
@@ -297,7 +297,7 @@ const AddStockPopup = ({ onClose, onCreate }) => {
                 htmlFor="price"
                 className="block text-sm font-medium text-gray-700"
               >
-                Price
+                Total Price
               </label>
               <input
                 type="number"
@@ -422,7 +422,7 @@ const AddStockPopup = ({ onClose, onCreate }) => {
                 htmlFor="price"
                 className="block text-sm font-medium text-gray-700"
               >
-                Price
+                Total Price
               </label>
               <input
                 type="number"
