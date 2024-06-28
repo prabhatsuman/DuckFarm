@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getTodayDate } from "../utils/getTodayDate";
 import eventBus from "../utils/eventBus";
-import {API_URL} from "../config";
+import API_URL from "../config";
 
 const AddSalesForm = ({ onClose, onSalesAdded }) => {
   const [formData, setFormData] = useState({

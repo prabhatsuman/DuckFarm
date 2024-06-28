@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FiChevronDown, FiPlus } from "react-icons/fi"; // Import icons from react-icons library
 import FeedUsePopup from "./FeedUsePopup"; // Import the FeedUsePopup component
-import {API_URL} from '../config';
+import API_URL from '../config';
 
 const FeedStockCard = ({ logoUrl }) => {
   const [totalFeed, setTotalFeed] = useState(0);

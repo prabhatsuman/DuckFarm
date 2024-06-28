@@ -1,5 +1,5 @@
 // DataService.js
-import {API_URL} from "../config";
+import API_URL from "../config";
 
 const fetchDataFromAPI = async (selectedType, selectedPeriod) => {
     const token = localStorage.getItem("accessToken");
