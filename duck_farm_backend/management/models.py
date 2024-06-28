@@ -64,6 +64,20 @@ class FeedStock(Stock):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     date_of_purchase = models.DateField()
 
+    def save(self, *args, **kwargs):
+        # Fetch the CurrentFeed object or create it if it does not exist
+        current_feed, created = CurrentFeed.objects.get_or_create(name=self.name)
+
+        if not created: # If the CurrentFeed object already existed
+            current_feed.quantity += self.quantity
+        else:
+            current_feed.quantity = self.quantity
+        
+        current_feed.save()
+        super().save(*args, **kwargs)
+        
+    
+
 
 class MedicineStock(Stock):
     name = models.CharField(max_length=100)
@@ -110,3 +124,12 @@ class Sales(models.Model):
 
     def __str__(self):
         return f"{self.dealer} - {self.amount}"
+
+class CurrentFeed(models.Model):
+    name=models.CharField(max_length=100,unique=True)
+    quantity = models.PositiveIntegerField(default=0) 
+    
+    def __str__(self):
+        return self.name
+
+    

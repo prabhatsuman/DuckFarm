@@ -21,7 +21,7 @@ const HomePage = () => {
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="flex-shrink-0">
-            <h1 className="text-2xl font-bold text-gray-800">Your Logo or Brand</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Duck Farm</h1>
           </div>
           <nav className="space-x-4">
             {/* Open Login Modal */}

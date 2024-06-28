@@ -1,0 +1,3 @@
+2024-06-24 19:21:19,931 - management.management.commands.send_daily_email - INFO - Successfully sent email reminder to mr.prabhatsuman@gmail.com
+2024-06-24 19:22:17,343 - management.management.commands.send_daily_email - INFO - Successfully sent email reminder to mr.prabhatsuman@gmail.com
+2024-06-24 19:23:17,775 - management.management.commands.send_daily_email - INFO - Successfully sent email reminder to mr.prabhatsuman@gmail.com

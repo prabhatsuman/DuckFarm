@@ -41,7 +41,7 @@ const Signup = ({ handleClose }) => {
       })
       .then((response) => {
         console.log("Signup successful:", response.data);
-        navigate("/login"); // Redirect to login page after successful signup
+        navigate("/"); // Redirect to login page after successful signup
         handleClose(); // Close the modal after successful signup
       })
       .catch((error) => {

@@ -120,4 +120,12 @@
 }
 
 
-/* egg collection chart */
+/*chatbot*/
+
+.react-chatbot-kit-chat-btn-send {
+    pointer-events: none;
+}
+
+.react-chatbot-kit-chat-input {
+    pointer-events: none;
+}
