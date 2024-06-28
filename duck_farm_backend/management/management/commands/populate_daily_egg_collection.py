@@ -9,7 +9,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         fake = Faker()
-        end_date = datetime(2024, 6, 18)
+        end_date = datetime(2024, 6, 25)
         start_date = end_date - timedelta(days=365)
         dates = [start_date + timedelta(days=i) for i in range((end_date - start_date).days)]
         random.shuffle(dates)

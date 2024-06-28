@@ -8,7 +8,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         start_date = datetime.strptime("20-06-2023", "%d-%m-%Y")
-        end_date = datetime.strptime("20-06-2024", "%d-%m-%Y")
+        end_date = datetime.strptime("28-06-2024", "%d-%m-%Y")
         
         # Get all dealer IDs to randomly select from
         dealer_ids = list(Dealer.objects.values_list('id', flat=True))

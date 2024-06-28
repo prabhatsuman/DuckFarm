@@ -8,7 +8,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         start_date = datetime.strptime("20-06-2023", "%d-%m-%Y")
-        end_date = datetime.strptime("20-06-2024", "%d-%m-%Y")
+        end_date = datetime.strptime("28-06-2024", "%d-%m-%Y")
         dealer_id = 1
         dealer = Dealer.objects.get(pk=dealer_id)
 
