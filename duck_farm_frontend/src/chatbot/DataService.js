@@ -1,11 +1,12 @@
 // DataService.js
+import {API_URL} from "../config";
 
 const fetchDataFromAPI = async (selectedType, selectedPeriod) => {
     const token = localStorage.getItem("accessToken");
   
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/chatbot/${selectedType}/${selectedPeriod}/`,
+        `${API_URL}/api/chatbot/${selectedType}/${selectedPeriod}/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

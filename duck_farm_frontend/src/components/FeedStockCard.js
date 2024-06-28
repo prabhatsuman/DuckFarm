@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FiChevronDown, FiPlus } from "react-icons/fi"; // Import icons from react-icons library
 import FeedUsePopup from "./FeedUsePopup"; // Import the FeedUsePopup component
+import {API_URL} from '../config';
 
 const FeedStockCard = ({ logoUrl }) => {
   const [totalFeed, setTotalFeed] = useState(0);
@@ -14,7 +15,7 @@ const FeedStockCard = ({ logoUrl }) => {
   const fetchTotalFeed = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/current_feed/total_stock/",
+        `${API_URL}/api/current_feed/total_stock/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,

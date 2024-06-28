@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import {API_URL} from "../config";
 
 const FeedUsePopup = ({ onClose,onFeedUsed }) => {
   const [feeds, setFeeds] = useState([]);
@@ -13,7 +14,7 @@ const FeedUsePopup = ({ onClose,onFeedUsed }) => {
   const fetchFeeds = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get("http://127.0.0.1:8000/api/current_feed/", {
+      const response = await axios.get(`${API_URL}/api/current_feed/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

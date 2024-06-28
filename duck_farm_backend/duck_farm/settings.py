@@ -176,9 +176,10 @@ SENDGRID_SANDBOX_MODE_IN_DEBUG = False  # If True, emails are not sent, but logg
 
 
 CRONJOBS = [
-    ('* * * * *', 'django.core.management.call_command', ['send_daily_email']),
-    # Change the cron timing as required; this runs every minute for testing purposes
+    ('30 15 * * *', 'django.core.management.call_command', ['send_daily_email']),
+    # This runs at 9:00 PM IST (3:30 PM UTC)
 ]
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/

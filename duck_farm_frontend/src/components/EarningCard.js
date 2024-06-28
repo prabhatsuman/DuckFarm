@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import {API_URL} from "../config";
 
 const EarningCard = ({ logoUrl }) => {
   const [totalEarnings, setTotalEarnings] = useState(0);
@@ -10,7 +11,7 @@ const EarningCard = ({ logoUrl }) => {
   const fetchTotalEarnings = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/earnings/this_month/",
+        `${API_URL}/api/earnings/this_month/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
