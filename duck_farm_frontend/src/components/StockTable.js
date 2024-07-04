@@ -221,7 +221,7 @@ const StockTable = () => {
       <div className="flex justify-between items-center mb-4">
         <input
           type="text"
-          className="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          className="px-4 py-2 border border-gray-600 rounded-md"
           placeholder="Search items..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -234,7 +234,7 @@ const StockTable = () => {
             id="stockTypeSelect"
             value={selectedStockType}
             onChange={handleStockTypeChange}
-            className="border rounded-md p-2 mr-4"
+            className="border rounded-md p-2 mr-4 border-gray-600"
           >
             <option value="">-- Select Stock Type --</option>
             {stockTypes.map((stockType) => (
@@ -262,54 +262,54 @@ const StockTable = () => {
       {selectedStockType && (
         <div className="overflow-hidden overflow-y-auto max-h-[calc(100vh-250px)]">
           <table className="w-full divide-y divide-gray-300">
-            <thead className="bg-gray-50 sticky top-0 z-10 border-solid">
+            <thead className="bg-gradient-to-br from-blue-950 to-slate-950 sticky top-0 z-10 border-solid">
               <tr>
                 <th
-                  className="py-4 px-6 bg-gray-100 text-center uppercase text-sm leading-normal"
+                  className="py-4 px-6 text-white text-center uppercase text-sm leading-normal"
                   onClick={() => handleSort("name")}
                 >
                   Item {renderSortIcon("name")}
                 </th>
                 {selectedStockType !== "other" && (
                   <th
-                    className="py-4 px-6 bg-gray-100 text-center uppercase text-sm leading-normal"
+                    className="py-4 px-6 text-white text-center uppercase text-sm leading-normal"
                     onClick={() => handleSort("brand")}
                   >
                     Brand {renderSortIcon("brand")}
                   </th>
                 )}
                 <th
-                  className="py-4 px-12 bg-gray-100 text-center uppercase text-sm leading-normal"
+                  className="py-4 px-12 text-white text-center uppercase text-sm leading-normal"
                   onClick={() => handleSort("quantity")}
                 >
                   Quantity {renderSortIcon("quantity")}
                 </th>
                 <th
-                  className="py-4 px-6 bg-gray-100 text-center uppercase text-sm leading-normal"
+                  className="py-4 px-6 text-white text-center uppercase text-sm leading-normal"
                   onClick={() => handleSort("price")}
                 >
                   Price {renderSortIcon("price")}
                 </th>
                 <th
-                  className="py-4 px-10 bg-gray-100 text-center uppercase text-sm leading-normal"
+                  className="py-4 px-10 text-white text-center uppercase text-sm leading-normal"
                   onClick={() => handleSort("date_of_purchase")}
                 >
                   Date of Purchase {renderSortIcon("date_of_purchase")}
                 </th>
                 {selectedStockType === "medicine" && (
                   <th
-                    className="py-4 px-8 bg-gray-100 text-center uppercase text-sm leading-normal"
+                    className="py-4 px-8 text-white text-center uppercase text-sm leading-normal"
                     onClick={() => handleSort("date_of_expiry")}
                   >
                     Date of Expiry {renderSortIcon("date_of_expiry")}
                   </th>
                 )}
-                <th className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal">
+                <th className="py-4 px-6 text-white text-left uppercase text-sm leading-normal">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-gray-100 divide-y divide-gray-400">
               {currentItems.map((item) => (
                 <tr key={item.id}>
                   <td className="py-4 px-6 text-center">{item.name}</td>
@@ -337,7 +337,7 @@ const StockTable = () => {
         </div>
       )}
       {filteredItems.length > itemsPerPage && (
-        <nav className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sticky bottom-0">
+        <nav className="bg-gray-200 px-4 py-3 flex items-center justify-between  sticky bottom-0">
           <div>
             <p className="text-sm text-gray-700">
               Showing{" "}
@@ -349,38 +349,23 @@ const StockTable = () => {
               results
             </p>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 ">
             <button
               onClick={() => paginate(currentPage - 1)}
               disabled={currentPage === 1}
-              className={`px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`px-4 py-2 text-sm font-medium text-white bg-blue-950 rounded-md  focus:outline-none focus:ring-2 focus:ring-blue-600 ${
                 currentPage === 1 ? "cursor-not-allowed opacity-50" : ""
               }`}
             >
               Previous
             </button>
-            {Array.from(
-              { length: Math.ceil(filteredItems.length / itemsPerPage) },
-              (_, index) => (
-                <button
-                  key={index}
-                  onClick={() => paginate(index + 1)}
-                  className={`px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    currentPage === index + 1
-                      ? "bg-indigo-50 border-indigo-500 text-indigo-600 cursor-not-allowed"
-                      : ""
-                  }`}
-                >
-                  {index + 1}
-                </button>
-              )
-            )}
+           
             <button
               onClick={() => paginate(currentPage + 1)}
               disabled={
                 currentPage === Math.ceil(filteredItems.length / itemsPerPage)
               }
-              className={`px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`px-4 py-2 text-sm font-medium text-white bg-blue-950 rounded-md  focus:outline-none focus:ring-2 focus:ring-blue-600 ${
                 currentPage === Math.ceil(filteredItems.length / itemsPerPage)
                   ? "cursor-not-allowed opacity-50"
                   : ""
