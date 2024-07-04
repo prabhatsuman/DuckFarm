@@ -169,7 +169,7 @@ const AddSalesForm = ({ onClose, onSalesAdded }) => {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                className="px-4 py-2 bg-blue-950 text-white rounded-md"
               >
                 Confirm
               </button>
@@ -247,7 +247,7 @@ const AddSalesForm = ({ onClose, onSalesAdded }) => {
               </button>
               <button
                 type="submit"
-                className={`px-4 py-2 bg-blue-500 text-white rounded-md ${
+                className={`px-4 py-2 bg-blue-950 text-white rounded-md ${
                   isNextDisabled ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 disabled={isNextDisabled}

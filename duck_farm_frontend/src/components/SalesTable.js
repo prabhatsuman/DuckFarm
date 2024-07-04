@@ -191,11 +191,11 @@ const SalesTable = () => {
         </div>
         <div className="overflow-hidden overflow-y-auto max-h-[calc(100vh-250px)]">
           <table className="w-full divide-y divide-gray-300">
-            <thead className="bg-gray-50 sticky top-0 z-10">
+            <thead className="bg-gradient-to-br from-blue-950 to-slate-950 sticky top-0 z-10">
               <tr>
                 <th
                   scope="col"
-                  className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal cursor-pointer"
+                  className="py-4 px-6 text-white text-left uppercase text-sm leading-normal cursor-pointer"
                   onClick={() => handleSort("date")}
                 >
                   Date{" "}
@@ -203,19 +203,19 @@ const SalesTable = () => {
                 </th>
                 <th
                   scope="col"
-                  className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal cursor-pointer"
+                  className="py-4 px-6 text-white text-left uppercase text-sm leading-normal cursor-pointer"
                 >
                   Description
                 </th>
                 <th
                   scope="col"
-                  className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal cursor-pointer"
+                  className="py-4 px-6 text-white text-left uppercase text-sm leading-normal cursor-pointer"
                 >
                   Dealer
                 </th>
                 <th
                   scope="col"
-                  className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal cursor-pointer"
+                  className="py-4 px-6 text-white text-left uppercase text-sm leading-normal cursor-pointer"
                   onClick={() => handleSort("quantity")}
                 >
                   Quantity{" "}
@@ -223,7 +223,7 @@ const SalesTable = () => {
                     (sortOrder === "asc" ? "▲" : "▼")}
                 </th>
                 <th
-                  className="py-4 px-6 bg-gray-100 text-left uppercase text-sm leading-normal cursor-pointer"
+                  className="py-4 px-6 text-white text-left uppercase text-sm leading-normal cursor-pointer"
                   onClick={() => handleSort("amount")}
                 >
                   Amount{" "}
@@ -231,16 +231,16 @@ const SalesTable = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-gray-100 divide-y divide-gray-400">
               {filteredSales.map((sale, index) => (
                 <tr key={index}>
-                  <td className="px-6 py-4 border-b border-gray-200">
+                  <td className="px-6 py-4">
                     {new Date(sale.date).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 border-b border-gray-200">
+                  <td className="px-6 py-4">
                     {sale.description}
                   </td>
-                  <td className="px-6 py-4 border-b border-gray-200">
+                  <td className="px-6 py-4">
                     {sale.dealer ? (
                       <div>
                         <div>{sale.dealer.name}</div>
@@ -252,10 +252,10 @@ const SalesTable = () => {
                       "No dealer assigned"
                     )}
                   </td>
-                  <td className="px-6 py-4 border-b border-gray-200">
+                  <td className="px-6 py-4">
                     {sale.quantity}
                   </td>
-                  <td className="px-6 py-4 border-b border-gray-200">
+                  <td className="px-6 py-4">
                     {sale.amount}
                   </td>
                 </tr>
@@ -263,7 +263,7 @@ const SalesTable = () => {
             </tbody>
           </table>
         </div>
-        <nav className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sticky bottom-0">
+        <nav className="bg-gray-200 px-4 py-3 flex items-center justify-between border-t border-gray-200 sticky bottom-0">
           <div>
             <p className="text-sm text-gray-700">
               Page <b>{currentPage}</b> of <b>{totalPages}</b>
@@ -273,7 +273,7 @@ const SalesTable = () => {
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className={`px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`px-4 py-2 text-sm font-medium text-white bg-blue-950  rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 ${
                 currentPage === 1 ? "cursor-not-allowed opacity-50" : ""
               }`}
             >
@@ -282,7 +282,7 @@ const SalesTable = () => {
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className={`px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`px-4 py-2 text-sm font-medium text-white bg-blue-950  rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 ${
                 currentPage === totalPages
                   ? "cursor-not-allowed opacity-50"
                   : ""

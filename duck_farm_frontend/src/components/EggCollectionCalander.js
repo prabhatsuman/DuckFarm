@@ -25,7 +25,7 @@ const EggCollectionCalendar = () => {
         return itemDate.getMonth() === month && itemDate.getFullYear() === year;
       });
       const formattedEvents = filteredData.map((item) => ({
-        title: `Eggs Collected: ${item.quantity}`,
+        title: `${item.quantity}`,
         start: new Date(item.date),
         end: new Date(item.date),
       }));
@@ -94,7 +94,7 @@ const EggCollectionCalendar = () => {
     };
 
     return (
-      <div className="flex justify-between items-center px-6 py-4 ">
+      <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-br from-blue-950 to-slate-950 rounded-t-md">
         <div className="flex items-center justify-end">
           <select
             className="mr-2 px-4 py-2 border rounded"
@@ -120,7 +120,7 @@ const EggCollectionCalendar = () => {
           </select>
         </div>
         <div className="flex items-center">
-          <div className="text-xl font-bold">
+          <div className="text-xl font-bold text-white">
             {months[selectedMonth].label} {selectedYear}
           </div>
         </div>
@@ -141,27 +141,22 @@ const EggCollectionCalendar = () => {
   };
 
   return (
-    <div className="m-auto w-full max-h-screen flex flex-col items-center p-4">
-      <h1 className="text-2xl font-bold mb-4">Egg Collection Calendar</h1>
-      <div className="bg-white shadow-md rounded-md w-full">
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          style={{ height: 500 }}
-          className="p-4"
-          views={[Views.MONTH]}
-          defaultView={Views.MONTH}
-          date={currentDate}
-          onNavigate={handleNavigate}
-          components={{
-            toolbar: (props) => (
-              <CustomToolbar {...props} onNavigate={handleNavigate} />
-            ),
-          }}
-        />
-      </div>
+    <div className=" shadow-md rounded-md w-full h-full">
+      <Calendar
+        localizer={localizer}
+        events={events}
+        startAccessor="start"
+        endAccessor="end"        
+        views={[Views.MONTH]}
+        defaultView={Views.MONTH}
+        date={currentDate}
+        onNavigate={handleNavigate}
+        components={{
+          toolbar: (props) => (
+            <CustomToolbar {...props} onNavigate={handleNavigate} />
+          ),
+        }}
+      />
     </div>
   );
 };
