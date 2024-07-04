@@ -17,13 +17,13 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="flex justify-center align-top"> 
+        <div className="flex justify-center align-top bg-white bg-image" > 
                 <Sidebar isOpen={isSidebarOpen} />
             <div className="flex flex-auto flex-col"> 
             <Navbar toggleSidebar={toggleSidebar} />
                 <main className="flex-auto px-6 py-3 h-full">
                     <Routes>
-                        <Route path="/" element={<Home />} />
+                        <Route path="home" element={<Home />} />
                         <Route path="dealerinfo" element={<DealerInfo />} />
                         <Route path="stockinfo" element={<StockTable />} />
                         <Route path="eggcollection" element={<EggCollectionCalander />} />

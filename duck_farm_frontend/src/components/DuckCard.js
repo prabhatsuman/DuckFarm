@@ -63,7 +63,10 @@ const DuckCard = ({ logoUrl }) => {
 
   // Handle clicking outside options menu to close it
   const handleOutsideClick = (e) => {
-    if (!e.target.closest(".options-container") && !e.target.closest(".options-toggle")) {
+    if (
+      !e.target.closest(".options-container") &&
+      !e.target.closest(".options-toggle")
+    ) {
       setShowOptions(false);
     }
   };
@@ -87,7 +90,10 @@ const DuckCard = ({ logoUrl }) => {
           <FiChevronDown className="text-xs" />
         </button>
         {showOptions && (
-          <div className="absolute bg-white border border-gray-200 shadow-lg rounded-lg z-30 options-container" style={{ right: 20, top: 10 }}>
+          <div
+            className="absolute bg-white border border-gray-200 shadow-lg rounded-lg z-30 options-container"
+            style={{ right: 20, top: 10 }}
+          >
             <button
               className="block py-2.5 px-4 rounded hover:bg-gray-100 w-full text-left truncate"
               onClick={handleShowDuckInfo}
@@ -104,16 +110,18 @@ const DuckCard = ({ logoUrl }) => {
         )}
       </div>
       <div className="flex items-center justify-between">
+        <div className="mt-4">
+          <h3 className="text-xl font-medium text-gray-900">Total Ducks</h3>
+          <p className="mt-2 text-black text-left">
+            {totalDucks} ducks
+          </p>
+        </div>
         <div className="flex items-center">
           <img
             src={logoUrl}
             alt="Duck Logo"
-            className="object-cover h-16 w-16 mr-3"
+            className="object-cover h-20 w-24 mr-3"
           />
-        </div>
-        <div className="mt-4">
-          <h3 className="text-lg font-medium text-gray-900">Total Ducks</h3>
-          <p className="mt-2 text-sm text-gray-500 text-right">{totalDucks} ducks</p>
         </div>
       </div>
       {showAddDuckForm && (

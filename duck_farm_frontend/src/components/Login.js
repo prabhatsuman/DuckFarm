@@ -28,7 +28,7 @@ const Login = ({ handleClose }) => {
         localStorage.setItem("accessToken", response.data.access);
         localStorage.setItem("refreshToken", response.data.refresh);
         console.log("Login successful:", response.data);
-        navigate("/dashboard"); // Redirect to dashboard after successful login
+        navigate("/dashboard/home"); // Redirect to dashboard after successful login
         handleClose(); // Close the modal after successful login
       })
       .catch((error) => {

@@ -26,22 +26,22 @@ const Home = () => {
       {/* Cards Section */}
       <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1 */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-slate-300 overflow-hidden shadow rounded-lg">
           <DuckCard logoUrl="/images/duck_logo.png" />
         </div>
 
         {/* Card 2 */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-slate-300 overflow-hidden shadow rounded-lg">
           <EggCard logoUrl="/images/egg_logo.png" />
         </div>
 
         {/* Card 3 */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-slate-300 overflow-hidden shadow rounded-lg">
           <FeedStockCard logoUrl="/images/feed_logo.png" />
         </div>
 
         {/* Card 4 */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-slate-300 overflow-hidden shadow rounded-lg">
           <EarningCard logoUrl="/images/earning_logo.png" />
         </div>
       </div>
@@ -68,12 +68,12 @@ const Home = () => {
       {currentPage === 1 ? (
         <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
           {/* Graph 1 */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className=" overflow-hidden shadow rounded-lg">
             <EggCollectionChart />
           </div>
 
           {/* Graph 2 */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className=" overflow-hidden shadow rounded-lg">
             <SalesChart />
           </div>
         </div>

@@ -98,8 +98,8 @@ const ExpenseChart = () => {
           {
             label: "Monthly Expenses",
             data: monthlyData.map((item) => item.total_expense),
-            backgroundColor: "rgba(255, 25, 22, 0.4)",
-            borderColor: "rgba(192,75,192,1)",
+            backgroundColor: "rgba(29, 78, 256, 0.2)",
+            borderColor: "1e3a8a",
             borderWidth: 1,
           },
         ],
@@ -116,6 +116,25 @@ const ExpenseChart = () => {
           <Bar
             data={monthlyChartData}
             options={{
+              scales: {
+                x: {
+                  ticks: {
+                    font: {
+                      size: 12,
+                      weight: "bold",
+                    },
+                  },
+                },
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    font: {
+                      size: 12,
+                      weight: "bold",
+                    },
+                  },
+                },
+              },
               plugins: {
                 tooltip: {
                   callbacks: {
@@ -156,9 +175,9 @@ const ExpenseChart = () => {
             handlePageChange(currentPage > 1 ? currentPage - 1 : currentPage)
           }
           disabled={currentPage === 1}
-          className="bg-blue-500 text-white py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+          className="bg-blue-950 text-white py-2 px-4 rounded-md shadow-sm "
         >
-          &lt; Prev
+          &lt;
         </button>
         <button
           onClick={() =>
@@ -167,9 +186,9 @@ const ExpenseChart = () => {
             )
           }
           disabled={currentPage === totalPages}
-          className="bg-blue-500 text-white py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+          className="bg-blue-950 text-white py-2 px-4 rounded-md shadow-sm focus:ou"
         >
-          Next &gt;
+          &gt;
         </button>
       </div>
     );
@@ -192,7 +211,7 @@ const ExpenseChart = () => {
   };
 
   return (
-    <div className="expense-chart-container p-4 bg-white rounded-lg shadow-md">
+    <div className="expense-chart-container p-4 bg-gradient-to-b from-slate-50 to-blue-200 rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-4">
         <select
           value={view}
@@ -203,7 +222,7 @@ const ExpenseChart = () => {
         </select>
         {renderPaginationButtons()}
       </div>
-      <p className="text-center text-gray-500 mb-2">
+      <p className="text-center text-black mb-2">
         {view === "monthly" && `Month Range: ${monthlyDateRange}`}
       </p>
       {renderChart() || (

@@ -118,7 +118,7 @@ const FeedUsePopup = ({ onClose,onFeedUsed }) => {
           <button
             onClick={handleSubmit}
             disabled={isSubmitDisabled}
-            className={`px-4 py-2 bg-blue-500 text-white rounded-md ${
+            className={`px-4 py-2 bg-blue-950 text-white rounded-md ${
               isSubmitDisabled ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >

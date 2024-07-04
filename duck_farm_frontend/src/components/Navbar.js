@@ -22,11 +22,11 @@ const Navbar = ({ toggleSidebar }) => {
   };
 
   const handleRedirect = () => {
-    navigate('/dashboard');
+    navigate('/dashboard/home');
   };
 
   return (
-    <nav className="bg-gray-50 border-b border-gray-300 inset-x-0 sticky top-0 z-50 px-4 py-3 flex justify-between items-center md:justify-end">
+    <nav className=" inset-x-0 sticky top-0 z-50 px-4 py-3 flex justify-between items-center md:justify-end">
       {/* Hamburger Button */}
       <button
         className="md:hidden p-4 focus:outline-none"
