@@ -19,7 +19,7 @@ export default function Dashboard() {
     return (
         <div className="flex justify-center align-top bg-white bg-image" > 
                 <Sidebar isOpen={isSidebarOpen} />
-            <div className="flex flex-auto flex-col"> 
+            <div className="flex flex-auto flex-col w-5/6"> 
             <Navbar toggleSidebar={toggleSidebar} />
                 <main className="flex-auto px-6 py-3 h-full">
                     <Routes>

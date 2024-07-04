@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 
 export default function Sidebar({ isOpen }) {
     return (
-        <div className={`flex flex-col h-screen w-64 bg-gradient-to-br from-blue-950 to-slate-950
+        <div className={`flex flex-col h-screen w-1/6 bg-gradient-to-br from-blue-950 to-slate-950
          text-white p-12 sticky top-0 shadow-md transition-transform duration-300 ease-in-out transform ${isOpen ? 'translate-x-0' : '-translate-x-full hidden'}  md:translate-x-0 `}>
             <div>
                 <div className="pb-4">
