@@ -62,28 +62,7 @@ const AddExpenseForm = ({ onClose, onExpenseAdded }) => {
     e.preventDefault();
     setIsConfirming(true); // Show confirmation page
   };
-  const clearBackendCache = async () => {
-    try {
-      const response = await fetch(
-        `${API_URL}/api/clear_cache/`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
-      );
-      if (response.ok) {
-        const result = await response.json();
-        console.log(result.message);
-      } else {
-        console.error("Failed to clear cache");
-      }
-    } catch (error) {
-      console.error("Error clearing cache:", error);
-    }
-  };
+
   const handleConfirm = async () => {
     try {
       const response = await fetch(`${API_URL}/api/expenses/`, {
@@ -102,10 +81,7 @@ const AddExpenseForm = ({ onClose, onExpenseAdded }) => {
       if (response.ok) {
         console.log("Expense added successfully");
         eventBus.dispatch("newExpenseDataAdded", { newExpenseDataAdded: true });
-        eventBus.dispatch("newEarningDataAdded", { newEarningDataAdded: true });
-        await clearBackendCache();
-
-
+        eventBus.dispatch("newEarningDataAdded", { newEarningDataAdded: true });        
         onExpenseAdded();
       } else {
         console.error("Failed to add expense");
@@ -142,7 +118,7 @@ const AddExpenseForm = ({ onClose, onExpenseAdded }) => {
               <button
                 type="button"
                 onClick={handleConfirm}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                className="px-4 py-2 bg-blue-950 text-white rounded-md"
               >
                 Confirm
               </button>
@@ -240,7 +216,7 @@ const AddExpenseForm = ({ onClose, onExpenseAdded }) => {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                className="px-4 py-2 bg-blue-950 text-white rounded-md"
               >
                 Next
               </button>

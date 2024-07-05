@@ -41,28 +41,7 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
       [name]: value,
     }));
   };
-  const clearBackendCache = async () => {
-    try {
-      const response = await fetch(
-        `${API_URL}/api/egg_stock/clear_cache/`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
-      );
-      if (response.ok) {
-        const result = await response.json();
-        console.log(result.message);
-      } else {
-        console.error("Failed to clear cache");
-      }
-    } catch (error) {
-      console.error("Error clearing cache:", error);
-    }
-  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -79,9 +58,7 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
 
         if (response.ok) {
           console.log("Eggs added successfully");
-          eventBus.dispatch("newEggDataAdded", { newEggDataAdded: true });
-
-          await clearBackendCache();
+          eventBus.dispatch("newEggDataAdded", { newEggDataAdded: true });   
 
           onEggAdded();
         } else {
@@ -126,7 +103,7 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                className="px-4 py-2 bg-blue-950 text-white rounded-md"
               >
                 Confirm
               </button>
@@ -183,7 +160,7 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                className="px-4 py-2 bg-blue-950 text-white rounded-md"
               >
                 Next
               </button>

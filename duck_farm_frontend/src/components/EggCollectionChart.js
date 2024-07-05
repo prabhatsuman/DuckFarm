@@ -11,8 +11,10 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler,
 } from "chart.js";
 import { BsBorderWidth } from "react-icons/bs";
+import { fill } from "lodash";
 
 ChartJS.register(
   CategoryScale,
@@ -21,7 +23,8 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 const EggCollectionChart = () => {
@@ -65,7 +68,7 @@ const EggCollectionChart = () => {
   const fetchTotalDailyPages = async () => {
     try {
       const response = await fetch(
-        `${API_URL}/api/egg_stock/daily_view/`,
+        `${API_URL}/api/egg_stock/daily_total_pages/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -73,11 +76,10 @@ const EggCollectionChart = () => {
         }
       );
       const result = await response.json();
-      setDailyTotalPages(result.count);
+      setDailyTotalPages(result.total_pages);
 
-      setDailyPage(result.count);
-      await fetchDailyData(result.count);
-      
+      setDailyPage(result.total_pages);
+      await fetchDailyData(result.total_pages);
     } catch (error) {
       console.error("Error fetching total pages:", error);
     }
@@ -85,7 +87,7 @@ const EggCollectionChart = () => {
   const fetchTotalMonthlyPages = async () => {
     try {
       const response = await fetch(
-        `${API_URL}/api/egg_stock/monthly_view/`,
+        `${API_URL}/api/egg_stock/monthly_total_pages/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -93,15 +95,13 @@ const EggCollectionChart = () => {
         }
       );
       const result = await response.json();
-      setMonthlyTotalPages(result.count);
-      setMonthlyPage(result.count);
-      await fetchMonthlyData(result.count);
-      
+      setMonthlyTotalPages(result.total_pages);
+      setMonthlyPage(result.total_pages);
+      await fetchMonthlyData(result.total_pages);
     } catch (error) {
       console.error("Error fetching total pages:", error);
     }
   };
-
 
   const fetchDailyData = async (page) => {
     try {
@@ -135,8 +135,7 @@ const EggCollectionChart = () => {
         }
       );
       const result = await response.json();
-      setMonthlyData(result.results);
-      setMonthlyTotalPages(result.count);
+      setMonthlyData(result.results);      
       setMonthlyDateRange(
         `From ${result.month_range.start} to ${result.month_range.end}`
       );
@@ -146,7 +145,6 @@ const EggCollectionChart = () => {
   };
 
   const handleDailyPageChange = async (page) => {
-
     setDailyPage(page);
     await fetchDailyData(page);
   };
@@ -165,8 +163,9 @@ const EggCollectionChart = () => {
           {
             label: "Daily Egg Collection",
             data: dailyData.map((item) => item.eggs),
-            borderColor: "rgba(75,192,192,1)",
-            backgroundColor: "rgba(75,192,192,0.2)",
+            fill: true,
+            borderColor: "#1e3a8a",
+            backgroundColor: "rgba(29, 78, 256, 0.2)",
           },
         ],
       });
@@ -183,8 +182,8 @@ const EggCollectionChart = () => {
           {
             label: "Monthly Egg Collection",
             data: monthlyData.map((item) => item.eggs),
-            borderColor: "rgba(192,75,192,1)",
-            backgroundColor: "rgba(192,75,192,0.2)",
+            borderColor: "#1e3a8a",
+            backgroundColor: "rgba(29, 78, 256, 0.2)",
             borderWidth: 1,
           },
         ],
@@ -201,6 +200,25 @@ const EggCollectionChart = () => {
           <Line
             data={dailyChartData}
             options={{
+              scales: {
+                x: {
+                  ticks: {
+                    font: {
+                      size: 12,
+                      weight: "bold",
+                    },
+                  },
+                },
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    font: {
+                      size: 12,
+                      weight: "bold",
+                    },
+                  },
+                },
+              },
               plugins: {
                 tooltip: {
                   callbacks: {
@@ -219,6 +237,26 @@ const EggCollectionChart = () => {
           <Bar
             data={monthlyChartData}
             options={{
+              scales: {
+                x: {
+                  ticks: {
+                    font: {
+                      size: 12,
+                      weight: "bold",
+                    },
+                  },
+                },
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    font: {
+                      size: 12,
+                      weight: "bold",
+                    },
+                  },
+                },
+              },
+
               plugins: {
                 tooltip: {
                   callbacks: {
@@ -264,9 +302,9 @@ const EggCollectionChart = () => {
             handlePageChange(currentPage > 1 ? currentPage - 1 : currentPage)
           }
           disabled={currentPage === 1}
-          className="bg-blue-500 text-white py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+          className="bg-blue-950 text-white py-2 px-4 rounded-md shadow-sm"
         >
-          &lt; Prev
+          &lt;
         </button>
         <button
           onClick={() =>
@@ -275,9 +313,9 @@ const EggCollectionChart = () => {
             )
           }
           disabled={currentPage === totalPages}
-          className="bg-blue-500 text-white py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+          className="bg-blue-950 text-white py-2 px-4 rounded-md shadow-sm "
         >
-          Next &gt;
+          &gt;
         </button>
       </div>
     );
@@ -298,7 +336,7 @@ const EggCollectionChart = () => {
   };
 
   return (
-    <div className="egg-collection-chart-container p-4 bg-white rounded-lg shadow-md">
+    <div className="egg-collection-chart-container p-4 bg-gradient-to-b from-slate-50 to-blue-200 rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-4">
         <select
           value={view}
@@ -310,7 +348,7 @@ const EggCollectionChart = () => {
         </select>
         {renderPaginationButtons()}
       </div>
-      <p className="text-center text-gray-500 mb-2">
+      <p className="text-center text-black mb-2">
         {view === "daily" && `Date Range: ${dailyDateRange}`}
         {view === "monthly" && `Month Range: ${monthlyDateRange}`}
       </p>

@@ -22,11 +22,11 @@ const Navbar = ({ toggleSidebar }) => {
   };
 
   const handleRedirect = () => {
-    navigate('/dashboard');
+    navigate('/dashboard/home');
   };
 
   return (
-    <nav className="bg-gray-50 border-b border-gray-300 inset-x-0 sticky top-0 z-50 px-4 py-3 flex justify-between items-center md:justify-end">
+    <nav className=" inset-x-0 sticky top-0 z-50 px-4 py-3 flex justify-between items-center md:justify-end">
       {/* Hamburger Button */}
       <button
         className="md:hidden p-4 focus:outline-none"
@@ -42,7 +42,7 @@ const Navbar = ({ toggleSidebar }) => {
           onClick={handleRedirect}
         >
           {username && (
-            <span className="flex items-center mr-2">
+            <span className="flex items-center mr-2  font-bold text-xl">
               <FiUser className="w-5 h-5 mr-1" />
              
             {username.charAt(0).toUpperCase() + username.slice(1)}
@@ -54,7 +54,7 @@ const Navbar = ({ toggleSidebar }) => {
 
         {/* Logout Button */}
         <button
-          className="flex items-center text-black text-lg hover:text-gray-600 hover:bg-gray-200 transition-colors duration-300 rounded-full p-2"
+          className="flex items-center text-black font-bold text-xl hover:text-gray-600 hover:bg-gray-200 transition-colors duration-300 rounded-full p-2"
           onClick={handleLogout}
         >
           <FiLogOut className="w-5 h-5 mr-1" />

@@ -77,12 +77,12 @@ const EggCard = ({ logoUrl }) => {
         )}
       </div>
       <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <img src={logoUrl} alt="Egg Logo" className="object-cover h-16 w-16 mr-3" />
-        </div>
         <div className="mt-4">
-          <h3 className="text-lg font-medium text-gray-900">Egg Stock</h3>
-          <p className="mt-2 text-sm text-gray-500 text-right">{totalEggs} eggs</p>
+          <h3 className="text-xl font-medium text-gray-900">Egg Stock</h3>
+          <p className="mt-2 text-black text-left">{totalEggs} eggs</p>
+        </div>
+        <div className="flex items-center">
+          <img src={logoUrl} alt="Egg Logo" className="object-cover h-20 w-16 mr-3" />
         </div>
       </div>
       {showAddEggForm && (

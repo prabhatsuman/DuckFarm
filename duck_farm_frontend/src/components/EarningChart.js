@@ -54,7 +54,7 @@ const EarningChart = () => {
   const fetchTotalMonthlyPagesAndData = async () => {
     try {
       const response = await fetch(
-        `${API_URL}/api/earnings/monthly_view/`,
+        `${API_URL}/api/earnings/monthly_total_pages/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -62,10 +62,10 @@ const EarningChart = () => {
         }
       );
       const result = await response.json();
-      setMonthlyTotalPages(result.count);
-      setMonthlyPage(result.count);
+      setMonthlyTotalPages(result.total_pages);
+      setMonthlyPage(result.total_pages);
 
-      await fetchMonthlyData(result.count);
+      await fetchMonthlyData(result.total_pages);
     } catch (error) {
       console.error("Error fetching total monthly earnings:", error);
     }
@@ -90,22 +90,29 @@ const EarningChart = () => {
       console.error("Error fetching monthly earnings data:", error);
     }
   };
-
   useEffect(() => {
     if (monthlyData.length > 0) {
+      const profitData = monthlyData.map(item => item.total_earning >= 0 ? item.total_earning : null);
+      const lossData = monthlyData.map(item => item.total_earning < 0 ? item.total_earning : null);
+  
       setMonthlyChartData({
         labels: monthlyData.map((item) => item.month),
         datasets: [
           {
-            label: "Monthly Earnings",
-            data: monthlyData.map((item) => item.total_earning),
-            backgroundColor: monthlyData.map((item) =>
-              item.total_earning >= 0 ? "rgba(75, 192, 192, 0.4)" : "rgba(255, 99, 132, 0.4)"
-            ),
-            borderColor: monthlyData.map((item) =>
-              item.total_earning >= 0 ? "rgba(75, 192, 192, 1)" : "rgba(255, 99, 132, 1)"
-            ),
+            label: "Profit",
+            data: profitData,
+            backgroundColor: "rgba(34, 150, 34, 0.6)",
+            borderColor: "rgba(34, 150, 34, 1)",
             borderWidth: 1,
+            skipNull: true,
+          },
+          {
+            label: "Loss",
+            data: lossData,
+            backgroundColor: "rgba(150, 0, 0, 0.6)",
+            borderColor: "rgba(256, 20, 60, 1)",
+            borderWidth: 1,
+            skipNull: true,
           },
         ],
       });
@@ -113,7 +120,7 @@ const EarningChart = () => {
       setMonthlyChartData({ labels: [], datasets: [] });
     }
   }, [monthlyData]);
-
+  
   const renderChart = () => {
     switch (view) {
       case "monthly":
@@ -121,11 +128,33 @@ const EarningChart = () => {
           <Bar
             data={monthlyChartData}
             options={{
+              scales: {
+                x: {
+                  ticks: {
+                    font: {
+                      size: 12,
+                      weight: "bold",
+                    },
+                  },
+                },
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    font: {
+                      size: 12,
+                      weight: "bold",
+                    },
+                  },
+                },
+              },
               plugins: {
                 tooltip: {
                   callbacks: {
-                    label: (tooltipItem) =>
-                      `Monthly Earnings: ₹${tooltipItem.raw.toFixed(2)}`,
+                    label: (tooltipItem) => {
+                      const value = tooltipItem.raw;
+                      const label = value >= 0 ? "Profit" : "Loss";
+                      return `${label}: ₹${value.toFixed(2)}`;
+                    },
                   },
                 },
               },
@@ -136,6 +165,7 @@ const EarningChart = () => {
         return null;
     }
   };
+  
 
   const renderPaginationButtons = () => {
     let totalPages;
@@ -161,9 +191,9 @@ const EarningChart = () => {
             handlePageChange(currentPage > 1 ? currentPage - 1 : currentPage)
           }
           disabled={currentPage === 1}
-          className="bg-blue-500 text-white py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+          className="bg-blue-950 text-white py-2 px-4 rounded-md shadow-sm"
         >
-          &lt; Prev
+          &lt;
         </button>
         <button
           onClick={() =>
@@ -172,9 +202,9 @@ const EarningChart = () => {
             )
           }
           disabled={currentPage === totalPages}
-          className="bg-blue-500 text-white py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+          className="bg-blue-950 text-white py-2 px-4 rounded-md shadow-sm"
         >
-          Next &gt;
+          &gt;
         </button>
       </div>
     );
@@ -197,7 +227,7 @@ const EarningChart = () => {
   };
 
   return (
-    <div className="earning-chart-container p-4 bg-white rounded-lg shadow-md">
+    <div className="earning-chart-container p-4 bg-gradient-to-b from-slate-50 to-blue-200 rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-4">
         <select
           value={view}
@@ -208,7 +238,7 @@ const EarningChart = () => {
         </select>
         {renderPaginationButtons()}
       </div>
-      <p className="text-center text-gray-500 mb-2">
+      <p className="text-center text-black mb-2">
         {view === "monthly" && `Month Range: ${monthlyDateRange}`}
       </p>
       {renderChart() || (

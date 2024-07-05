@@ -33,20 +33,18 @@ const EarningCard = ({ logoUrl }) => {
   return (
     <div className="px-4 py-5 sm:p-6">
       <div className="flex items-center justify-between">
+        <div className="mt-4">
+          <h3 className="text-xl font-medium text-gray-900 ">Total Earnings</h3>
+          <p className="mt-2 text-black text-left">
+            &#8377;{totalEarnings.toFixed(2)}
+          </p>
+        </div>
         <div className="flex items-center">
           <img
             src={logoUrl}
             alt="Earning Logo"
-            className="object-cover h-16 w-16 mr-3"
+            className="object-cover h-20 w-20 mr-3"
           />
-        </div>
-        <div className="flex flex-col items-end relative justify-center">
-          <h3 className="text-lg font-medium text-gray-900 text-wrap">
-            Total Earnings
-          </h3>
-          <p className="mt-2 text-sm text-gray-500 text-right">
-            &#8377;{totalEarnings.toFixed(2)}
-          </p>
         </div>
       </div>
     </div>

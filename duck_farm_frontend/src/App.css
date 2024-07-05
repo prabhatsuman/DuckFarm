@@ -114,11 +114,6 @@
 
 /* Current Time Indicator */
 
-.rbc-current-time-indicator {
-    background-color: #48bb78 !important;
-    /* Tailwind's bg-green-500 */
-}
-
 
 /*chatbot*/
 
@@ -128,4 +123,46 @@
 
 .react-chatbot-kit-chat-input {
     pointer-events: none;
+}
+
+
+/*calander css*/
+
+.rbc-header {
+    background-color: #0891b2;
+    border: #172554;
+    color: white;
+}
+
+.rbc-month-view {
+    border: 0px !important;
+}
+
+.rbc-day-bg {
+    background-color: #ccd3da !important;
+}
+
+.rbc-off-range-bg {
+    background-color: #e2e8f0 !important;
+}
+
+.rbc-today {
+    background-color: #9ca3af !important;
+    color: white;
+}
+
+.rbc-event-content {
+    color: #172554 !important;
+    font-size: xx-large;
+    font-weight: bold;
+    flex: auto;
+    text-align: center;
+}
+
+.bg-main {
+    background-image: url(/public/images/bg-1.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 100vh;
 }

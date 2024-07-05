@@ -62,26 +62,7 @@ const AddSalesForm = ({ onClose, onSalesAdded }) => {
     fetchCurrentStock();
     fetchDealers();
   }, []);
-
-  const clearBackendCache = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/clear_cache/`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
-      if (response.ok) {
-        const result = await response.json();
-        console.log(result.message);
-      } else {
-        console.error("Failed to clear cache");
-      }
-    } catch (error) {
-      console.error("Error clearing cache:", error);
-    }
-  };
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -131,8 +112,7 @@ const AddSalesForm = ({ onClose, onSalesAdded }) => {
 
         if (response.ok) {
           console.log("Sale added successfully");
-          eventBus.dispatch("newSaleDataAdded", { newSaleDataAdded: true });
-          await clearBackendCache();
+          eventBus.dispatch("newSaleDataAdded", { newSaleDataAdded: true });         
           onSalesAdded();
         } else {
           console.error("Failed to add sale");
@@ -170,7 +150,7 @@ const AddSalesForm = ({ onClose, onSalesAdded }) => {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                className="px-4 py-2 bg-blue-950 text-white rounded-md"
               >
                 Confirm
               </button>
@@ -248,7 +228,7 @@ const AddSalesForm = ({ onClose, onSalesAdded }) => {
               </button>
               <button
                 type="submit"
-                className={`px-4 py-2 bg-blue-500 text-white rounded-md ${
+                className={`px-4 py-2 bg-blue-950 text-white rounded-md ${
                   isNextDisabled ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 disabled={isNextDisabled}

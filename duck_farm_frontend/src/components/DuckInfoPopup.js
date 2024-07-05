@@ -103,7 +103,7 @@ const DuckInfoPopup = ({ onClose }) => {
                                     </td>
                                     <td>
                                         <button
-                                            className={`px-2 py-1  bg-red-500 text-white rounded-md ${duck.male_count === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-600'}`}
+                                            className={`px-2 py-1  bg-blue-950 text-white rounded-md ${duck.male_count === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-600'}`}
                                             onClick={() => handleDecreaseCount(duck.id, 'male')}
                                             disabled={duck.male_count === 0}
                                         >
@@ -116,7 +116,7 @@ const DuckInfoPopup = ({ onClose }) => {
                                     </td>
                                     <td>
                                         <button
-                                            className={`px-2 py-1  bg-red-500 text-white rounded-md ${duck.female_count === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-600'}`}
+                                            className={`px-2 py-1  bg-blue-950 text-white rounded-md ${duck.female_count === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-600'}`}
                                             onClick={() => handleDecreaseCount(duck.id, 'female')}
                                             disabled={duck.female_count === 0}
                                         >

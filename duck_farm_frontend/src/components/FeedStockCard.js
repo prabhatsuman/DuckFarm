@@ -83,18 +83,18 @@ const FeedStockCard = ({ logoUrl }) => {
         )}
       </div>
       <div className="flex items-center justify-between">
+        <div className="mt-4">
+          <h3 className="text-xl font-medium text-gray-900">Feed Stock</h3>
+          <p className="mt-2 text-black text-left">
+            {totalFeed} Kg
+          </p>
+        </div>
         <div className="flex items-center">
           <img
             src={logoUrl}
             alt="Feed Logo"
-            className="object-cover h-16 w-16 mr-3"
+            className="object-cover h-20 w-20 mr-3"
           />
-        </div>
-        <div className="mt-4">
-          <h3 className="text-lg font-medium text-gray-900">Feed Stock</h3>
-          <p className="mt-2 text-sm text-gray-500 text-right">
-            {totalFeed} Kg
-          </p>
         </div>
       </div>
       {showFeedUsePopup && (

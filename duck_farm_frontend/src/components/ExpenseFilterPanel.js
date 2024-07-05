@@ -123,10 +123,10 @@ const ExpenseFilterPanel = ({ onFilterChange, totalAmount }) => {
     onFilterChange(filters);
   };
   return (
-    <div className="bg-gray-100 p-4 rounded-lg shadow-lg">
+    <div className="bg-slate-300 p-4 rounded-lg shadow-lg">
       <h2 className="text-lg font-medium mb-2">Filters</h2>
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+        <label className="block text-sm font-medium text-gray-950 mb-1">Search</label>
         <input
           type="text"
           value={filters.searchTerm}
@@ -136,7 +136,7 @@ const ExpenseFilterPanel = ({ onFilterChange, totalAmount }) => {
         />
       </div>
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+        <label className="block text-sm font-medium text-gray-950 mb-1">Date Range</label>
         <div className="flex space-x-2">
           <input
             type="date"
@@ -153,7 +153,7 @@ const ExpenseFilterPanel = ({ onFilterChange, totalAmount }) => {
         </div>
       </div>
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Expense Type</label>
+        <label className="block text-sm font-medium text-gray-950 mb-1">Expense Type</label>
         <select
           value={filters.expenseType}
           onChange={handleExpenseTypeChange}
@@ -168,7 +168,7 @@ const ExpenseFilterPanel = ({ onFilterChange, totalAmount }) => {
         </select>
       </div>
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Dealer</label>
+        <label className="block text-sm font-medium text-gray-950 mb-1">Dealer</label>
         <select
           value={filters.selectedDealer}
           onChange={handleDealerChange}
@@ -183,7 +183,7 @@ const ExpenseFilterPanel = ({ onFilterChange, totalAmount }) => {
         </select>
       </div>
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Amount Range</label>
+        <label className="block text-sm font-medium text-gray-950 mb-1">Amount Range</label>
         <div className="flex space-x-2">
           <input
             type="number"
@@ -202,12 +202,12 @@ const ExpenseFilterPanel = ({ onFilterChange, totalAmount }) => {
         </div>
       </div>
       <div className="mb-4">
-        <p className="block text-sm font-medium text-gray-700 mb-1">Total Amount: &#8377;{totalAmount}</p>
+        <p className="block text-sm font-medium text-gray-950 mb-1">Total Amount: &#8377;{totalAmount}</p>
       </div>
       <div>
         <button
           onClick={clearFilters}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          className="px-4 py-2 text-white bg-blue-950 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
         >
           Clear Filters
         </button>
