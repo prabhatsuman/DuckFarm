@@ -40,26 +40,7 @@ const AddStockPopup = ({ onClose, onCreate }) => {
       console.error("Error fetching dealers:", error);
     }
   };
-  const clearBackendCache = async () => {
-    try {
-      const response = await fetch("http://127.0.0.1:8000/api/clear_cache/", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
-      if (response.ok) {
-        const result = await response.json();
-        console.log(result.message);
-      } else {
-        console.error("Failed to clear cache");
-      }
-    } catch (error) {
-      console.error("Error clearing cache:", error);
-    }
-  };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -99,8 +80,7 @@ const AddStockPopup = ({ onClose, onCreate }) => {
       if (response.ok) {
         console.log("Stock added successfully");
         eventBus.dispatch("newExpenseDataAdded", { newExpenseDataAdded: true });
-        eventBus.dispatch("newEarningDataAdded", { newEarningDataAdded: true });
-        await clearBackendCache();
+        eventBus.dispatch("newEarningDataAdded", { newEarningDataAdded: true });        
         onCreate();
       } else {
         console.error("Failed to add stock");

@@ -236,42 +236,46 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-
+    @action(detail=False, methods=['get'], url_path='monthly_total_pages', permission_classes=[IsAuthenticated])
+    def monthly_total_pages(self, request):
+        queryset = self.queryset.order_by('date')
+        first_year = queryset.first().date.year
+        last_year = queryset.last().date.year
+        total_years = last_year - first_year + 1
+        cache.set('total_expense_years', total_years, timeout=60*60)
+        return Response({'total_pages': total_years})
     @action(detail=False, methods=['get'], url_path='monthly_view', permission_classes=[IsAuthenticated])
     def monthly_view(self, request):
-        cache_key = 'monthly_expense_data'
-        cached_data = cache.get(cache_key)
-        if cached_data:
-            data = cached_data
-        else:
-            queryset = self.queryset.order_by('date')
-            first_year = queryset.first().date.year
-            last_year = queryset.last().date.year
-            months = ['January', 'February', 'March', 'April', 'May', 'June',
-                      'July', 'August', 'September', 'October', 'November', 'December']
-            data = []
-            for year in range(first_year, last_year + 1):
-                for month in range(1, 13):
-                    total_expense = queryset.filter(date__year=year, date__month=month).aggregate(
-                        total_expense=Sum('amount'))['total_expense'] or 0
+        page_number = int(request.query_params.get('page', 1))
+        total_pages = cache.get('total_expense_years')
+        page_number = total_pages - page_number + 1
 
-                    data.append({
-                        'year': year,
-                        'month': months[month - 1],
-                        'total_expense': total_expense
-                    })
-            cache.set(cache_key, data, timeout=60*60)
+        queryset = self.queryset.order_by('date')
+        current_year = date.today().year
+        target_year = current_year - page_number + 1
+        start_month = date(target_year, 1, 1)
+        end_month = date(target_year, 12, 31)
+        data = []
+        months = ['January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December']
 
-        paginator = MonthlyExpensePagination()
-        page = paginator.paginate_queryset(data, request)
-        if page is not None:
-            return paginator.get_paginated_response(page)
-        return Response(data)
+        for month in range(1, 13):
+            total_expense = queryset.filter(date__year=target_year, date__month=month).aggregate(
+                total_expense=Sum('amount'))['total_expense'] or 0
+            data.append({
+                'year': target_year,
+                'month': months[month - 1],
+                'total_expense': total_expense
+            })
 
-    @action(detail=False, methods=['get'], url_path='clear_cache', permission_classes=[IsAuthenticated])
-    def clear_cache(self, request):
-        cache.delete('monthly_expense_data')
-        return Response({'message': 'cache cleared'}, status=status.HTTP_200_OK)
+        result = {
+            'month_range': {
+                'start': f'January {target_year}',
+                'end': f'December {target_year}'
+            },
+            'results': data
+        }
+        return Response(result)
 
 
 class FeedStockViewSet(viewsets.ModelViewSet):
@@ -703,39 +707,52 @@ class EarningViewSet(viewsets.ViewSet):
                 'total_sales'] or 0
             total_earning = total_sales - total_expense
             return Response({'total_earnings': total_earning})
+        
+    @action(detail=False, methods=['get'], url_path='monthly_total_pages', permission_classes=[IsAuthenticated])
+    def monthly_total_pages(self, request):
+        queryset = Sales.objects.order_by('date')
+        first_year = queryset.first().date.year
+        last_year = queryset.last().date.year
+        total_years = last_year - first_year + 1
+        cache.set('total_earning_years', total_years, timeout=60*60)
+        return Response({'total_pages': total_years})
 
     @action(detail=False, methods=['get'], url_path='monthly_view', permission_classes=[IsAuthenticated])
     def monthly_view(self, request):
-        cache_key = 'monthly_earning_data'
-        cached_data = cache.get(cache_key)
-        if cached_data:
-            data = cached_data
-        else:
-            queryset = Sales.objects.order_by('date')
-            first_year = queryset.first().date.year
-            last_year = queryset.last().date.year
-            months = ['January', 'February', 'March', 'April', 'May', 'June',
-                      'July', 'August', 'September', 'October', 'November', 'December']
-            data = []
-            for year in range(first_year, last_year + 1):
-                for month in range(1, 13):
-                    total_sales = queryset.filter(date__year=year, date__month=month).aggregate(
-                        total_sales=Sum('amount'))['total_sales'] or 0
-                    total_expense = Expense.objects.filter(date__year=year, date__month=month).aggregate(
-                        total_expense=Sum('amount'))['total_expense'] or 0
-                    total_earning = total_sales - total_expense
-                    data.append({
-                        'year': year,
-                        'month': months[month - 1],
-                        'total_earning': total_earning
-                    })
-            cache.set(cache_key, data, timeout=60*60)
-
-        paginator = MonthlyEarningPagination()
-        page = paginator.paginate_queryset(data, request)
-        if page is not None:
-            return paginator.get_paginated_response(page)
-        return Response(data)
+        page_number = int(request.query_params.get('page', 1))
+        total_pages = cache.get('total_earning_years')
+        page_number = total_pages - page_number + 1
+        
+        queryset = Sales.objects.order_by('date')
+        current_year = date.today().year
+        target_year = current_year - page_number + 1
+        start_month = date(target_year, 1, 1)
+        end_month = date(target_year, 12, 31)
+        data = []
+        months = ['January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December']
+        
+        for month in range(1,13):
+            total_sales = queryset.filter(date__year=target_year, date__month=month).aggregate(total_sales=Sum('amount'))['total_sales'] or 0
+            total_expense = Expense.objects.filter(date__year=target_year, date__month=month).aggregate(total_expense=Sum('amount'))['total_expense'] or 0
+            total_earning = total_sales - total_expense
+            data.append({
+                'month': months[month-1],
+                'year': target_year,
+                'total_sales': total_sales,
+                'total_expense': total_expense,
+                'total_earning': total_earning
+            })
+        result = {
+            'month_range': {
+                'start': f'January {target_year}',
+                'end': f'December {target_year}'
+            },
+            'results': data
+        }
+        return Response(result)
+    
+         
 
 
 class CurrentFeedViewSet(viewsets.ModelViewSet):

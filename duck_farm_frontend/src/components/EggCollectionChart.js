@@ -181,7 +181,7 @@ const EggCollectionChart = () => {
           {
             label: "Monthly Egg Collection",
             data: monthlyData.map((item) => item.eggs),
-            borderColor: "1e3a8a",
+            borderColor: "#1e3a8a",
             backgroundColor: "rgba(29, 78, 256, 0.2)",
             borderWidth: 1,
           },

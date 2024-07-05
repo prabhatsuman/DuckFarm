@@ -53,7 +53,7 @@ const ExpenseChart = () => {
   const fetchTotalMonthlyPagesAndData = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/expenses/monthly_view/`,
+        `http://127.0.0.1:8000/api/expenses/monthly_total_pages/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -61,10 +61,10 @@ const ExpenseChart = () => {
         }
       );
       const result = await response.json();
-      setMonthlyTotalPages(result.count);
-      setMonthlyPage(result.count);
+      setMonthlyTotalPages(result.total_pages);
+      setMonthlyPage(result.total_pages);
 
-      await fetchMonthlyData(result.count);
+      await fetchMonthlyData(result.total_pages);
     } catch (error) {
       console.error("Error fetching total monthly expenses:", error);
     }
@@ -99,7 +99,7 @@ const ExpenseChart = () => {
             label: "Monthly Expenses",
             data: monthlyData.map((item) => item.total_expense),
             backgroundColor: "rgba(29, 78, 256, 0.2)",
-            borderColor: "1e3a8a",
+            borderColor: "#1e3a8a",
             borderWidth: 1,
           },
         ],

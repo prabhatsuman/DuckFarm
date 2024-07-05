@@ -53,7 +53,7 @@ const EarningChart = () => {
   const fetchTotalMonthlyPagesAndData = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/earnings/monthly_view/`,
+        `http://127.0.0.1:8000/api/earnings/monthly_total_pages/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -61,10 +61,10 @@ const EarningChart = () => {
         }
       );
       const result = await response.json();
-      setMonthlyTotalPages(result.count);
-      setMonthlyPage(result.count);
+      setMonthlyTotalPages(result.total_pages);
+      setMonthlyPage(result.total_pages);
 
-      await fetchMonthlyData(result.count);
+      await fetchMonthlyData(result.total_pages);
     } catch (error) {
       console.error("Error fetching total monthly earnings:", error);
     }

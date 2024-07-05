@@ -163,7 +163,7 @@ const SalesChart = () => {
           {
             label: "Daily Sales",
             data: dailyData.map((item) => item.sales),
-            borderColor: "1e3a8a",
+            borderColor: "#1e3a8a",
             fill: true,
             backgroundColor: "rgba(29, 78, 256, 0.2)",
           },
@@ -183,7 +183,7 @@ const SalesChart = () => {
             label: "Monthly Sales",
             data: monthlyData.map((item) => item.sales),
             backgroundColor: "rgba(29, 78, 256, 0.2)",
-            borderColor: "1e3a8a",
+            borderColor: "#1e3a8a",
             borderWidth: 1,
           },
         ],
