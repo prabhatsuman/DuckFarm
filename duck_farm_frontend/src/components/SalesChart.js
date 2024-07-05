@@ -65,7 +65,7 @@ const SalesChart = () => {
     try {
       // Replace the API endpoint with your actual endpoint for daily view
       const response = await fetch(
-        `http://127.0.0.1:8000/api/sales/daily_view/`,
+        `http://127.0.0.1:8000/api/sales/daily_total_pages/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -73,10 +73,10 @@ const SalesChart = () => {
         }
       );
       const result = await response.json();
-      setDailyTotalPages(result.count);
+      setDailyTotalPages(result.total_pages);
 
-      setDailyPage(result.count);
-      await fetchDailyData(result.count);
+      setDailyPage(result.total_pages);
+      await fetchDailyData(result.total_pages);
     } catch (error) {
       console.error("Error fetching total daily pages:", error);
     }
@@ -86,7 +86,7 @@ const SalesChart = () => {
     try {
       // Replace the API endpoint with your actual endpoint for monthly view
       const response = await fetch(
-        `http://127.0.0.1:8000/api/sales/monthly_view/`,
+        `http://127.0.0.1:8000/api/sales/monthly_total_pages/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -94,9 +94,9 @@ const SalesChart = () => {
         }
       );
       const result = await response.json();
-      setMonthlyTotalPages(result.count);
-      setMonthlyPage(result.count);
-      await fetchMonthlyData(result.count);
+      setMonthlyTotalPages(result.total_pages);
+      setMonthlyPage(result.total_pages);
+      await fetchMonthlyData(result.total_pages);
     } catch (error) {
       console.error("Error fetching total monthly pages:", error);
     }
@@ -136,8 +136,7 @@ const SalesChart = () => {
         }
       );
       const result = await response.json();
-      setMonthlyData(result.results);
-      setMonthlyTotalPages(result.count);
+      setMonthlyData(result.results);     
       setMonthlyDateRange(
         `From ${result.month_range.start} to ${result.month_range.end}`
       );

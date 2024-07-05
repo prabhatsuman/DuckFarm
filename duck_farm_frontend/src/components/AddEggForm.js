@@ -40,28 +40,7 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
       [name]: value,
     }));
   };
-  const clearBackendCache = async () => {
-    try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/api/egg_stock/clear_cache/",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
-      );
-      if (response.ok) {
-        const result = await response.json();
-        console.log(result.message);
-      } else {
-        console.error("Failed to clear cache");
-      }
-    } catch (error) {
-      console.error("Error clearing cache:", error);
-    }
-  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,9 +57,7 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
 
         if (response.ok) {
           console.log("Eggs added successfully");
-          eventBus.dispatch("newEggDataAdded", { newEggDataAdded: true });
-
-          await clearBackendCache();
+          eventBus.dispatch("newEggDataAdded", { newEggDataAdded: true });   
 
           onEggAdded();
         } else {

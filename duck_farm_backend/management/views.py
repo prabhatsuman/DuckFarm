@@ -303,7 +303,6 @@ class FeedStockViewSet(viewsets.ModelViewSet):
                 description=description
             )
 
-         
             # Create expenses entry
             expense_data = {
                 'description': f"Bought {quantity}kg of {name} feed of brand {brand} at ₹{price}",
@@ -352,7 +351,6 @@ class MedicineStockViewSet(viewsets.ModelViewSet):
                 description=description
             )
 
-            
             # Create expenses entry
             expense_data = {
                 'description': f"Bought {quantity}, {name} medicine of brand {brand} at ₹{price}",
@@ -396,8 +394,6 @@ class OtherStockViewSet(viewsets.ModelViewSet):
                 date_of_purchase=date_of_purchase,
                 description=description
             )
-
-            
 
             # Create expenses entry
             expense_data = {
@@ -444,79 +440,93 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
             # Return empty list if no date parameter is provided
             return Response([])
 
+    @action(detail=False, methods=['get'], url_path='daily_total_pages', permission_classes=[IsAuthenticated])
+    def daily_total_pages(self, request):
+        queryset = self.queryset.order_by('date')
+        first_date = queryset.first().date
+        last_date = date.today()
+
+        first_date -= timedelta(days=first_date.weekday())
+        last_date += timedelta(days=(7 - last_date.weekday()))
+
+        total_weeks = (last_date - first_date).days // 7
+        cache.set('total_weeks', total_weeks, timeout=60*60)
+        return Response({'total_pages': total_weeks})
+
     @action(detail=False, methods=['get'], url_path='daily_view', permission_classes=[IsAuthenticated])
     def daily_view(self, request):
-        cache_key = 'daily_egg_collection_data'
-        cached_data = cache.get(cache_key)
+        page_number = int(request.query_params.get('page', 1))
+        total_pages = cache.get('total_weeks')
+        page_number = total_pages-page_number+1
 
-        if cached_data:
-            data = cached_data
-        else:
-            queryset = self.queryset.order_by('date')
-            first_date = queryset.first().date
-            last_date = date.today()
+        current_sunday = date.today()-timedelta(days=date.today().weekday())
+        start_date = current_sunday-timedelta(days=(page_number-1)*7)
+        end_date = start_date+timedelta(days=6)
 
-            first_date -= timedelta(days=first_date.weekday())
-            last_date += timedelta(days=(7 - last_date.weekday()))
+        queryset = self.queryset.filter(
+            date__range=[start_date, end_date]).order_by('date')
 
-            data = []
-            day_list = ['Monday', 'Tuesday', 'Wednesday',
-                        'Thursday', 'Friday', 'Saturday', 'Sunday']
-            for single_date in daterange(first_date, last_date):
-                date_data = queryset.filter(date=single_date)
-                eggs = date_data.first().quantity if date_data.exists() else 0
-                data.append({
-                    'day': day_list[single_date.weekday()],
-                    'date': single_date,
-                    'eggs': eggs
-                })
+        days = ['Sunday', 'Monday', 'Tuesday',
+                'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        data = []
 
-            cache.set(cache_key, data, timeout=60*60)  # Cache for 1 hour
+        for single_date in (start_date + timedelta(n) for n in range(7)):
+            date_data = queryset.filter(date=single_date)
+            eggs = date_data.aggregate(total_eggs=Sum('quantity'))[
+                'total_eggs'] or 0
+            data.append({
+                'day': days[single_date.weekday()],
+                'date': single_date,
+                'eggs': eggs
+            })
+        result = {
+            'date_range': {
+                'start': start_date,
+                'end': end_date
+            },
+            'results': data
+        }
+        return Response(result)
 
-        paginator = self.pagination_class()
-        page = paginator.paginate_queryset(data, request)
-        if page is not None:
-            return paginator.get_paginated_response(page)
-
-        return Response(data)
+    @action(detail=False, methods=['get'], url_path='monthly_total_pages', permission_classes=[IsAuthenticated])
+    def monthly_total_pages(self, request):
+        queryset = self.queryset.order_by('date')
+        first_year = queryset.first().date.year
+        last_year = queryset.last().date.year
+        total_years = last_year - first_year + 1
+        cache.set('total_years', total_years, timeout=60*60)
+        return Response({'total_pages': total_years})
 
     @action(detail=False, methods=['get'], url_path='monthly_view', permission_classes=[IsAuthenticated])
     def monthly_view(self, request):
+        page_number = int(request.query_params.get('page', 1))
+        total_pages = cache.get('total_years')
+        page_number = total_pages-page_number+1
 
-        cache_key = 'monthly_egg_collection_data'
-        cached_data = cache.get(cache_key)
-        if cached_data:
-            data = cached_data
-        else:
-            queryset = self.queryset.order_by('date')
-            first_year = queryset.first().date.year
-            last_year = queryset.last().date.year
-            months = ['January', 'February', 'March', 'April', 'May', 'June',
-                      'July', 'August', 'September', 'October', 'November', 'December']
-            data = []
-            for year in range(first_year, last_year + 1):
-                for month in range(1, 13):
-                    eggs_collected = queryset.filter(date__year=year, date__month=month).aggregate(
-                        total_eggs=Sum('quantity'))['total_eggs'] or 0
+        queryset = self.queryset.order_by('date')
+        current_year = date.today().year
+        target_year = current_year - page_number + 1
+        start_month = date(target_year, 1, 1)
+        end_month = date(target_year, 12, 31)
+        data = []
+        months = ['January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December']
+        for month in range(1, 13):
+            eggs = queryset.filter(date__year=target_year, date__month=month).aggregate(
+                total_eggs=Sum('quantity'))['total_eggs'] or 0
+            data.append({
+                'month': months[month - 1],
+                'year': target_year,
+                'eggs': eggs})
 
-                    data.append({
-                        'year': year,
-                        'month': months[month - 1],
-                        'eggs': eggs_collected
-                    })
-            cache.set(cache_key, data, timeout=60*60)
-
-        paginator = MonthlyEggCollectionPagination()
-        page = paginator.paginate_queryset(data, request)
-        if page is not None:
-            return paginator.get_paginated_response(page)
-        return Response(data)
-
-    @action(detail=False, methods=['get'], url_path='clear_cache', permission_classes=[IsAuthenticated])
-    def clear_cache(self, request):
-        cache.delete('daily_egg_collection_data')
-        cache.delete('monthly_egg_collection_data')
-        return Response({'message': 'cache cleared'}, status=status.HTTP_200_OK)
+        result = {
+            'month_range': {
+                'start': f'January {target_year}',
+                'end': f'December {target_year}'
+            },
+            'results': data
+        }
+        return Response(result)
 
 
 class SalesViewSet(viewsets.ModelViewSet):
@@ -537,10 +547,9 @@ class SalesViewSet(viewsets.ModelViewSet):
         dealer = validated_data['dealer']
         quantity = validated_data['quantity']
         price_per_piece = validated_data['price']
-        amount = quantity*price_per_piece
+        amount = quantity * price_per_piece
 
         try:
-            # Create a new instance
             sales = Sales.objects.create(
                 date=date,
                 dealer=dealer,
@@ -548,7 +557,6 @@ class SalesViewSet(viewsets.ModelViewSet):
                 amount=amount,
                 description=f'Sold {quantity} eggs at ₹{price_per_piece} per piece'
             )
-            # on sucecessful adding of sales, Total egg stock should be decreased by the quantity of eggs sold
             egg_stock, created = EggStock.objects.get_or_create(id=1)
             egg_stock.total_stock -= quantity
             egg_stock.save()
@@ -571,84 +579,99 @@ class SalesViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='dealer_list', permission_classes=[IsAuthenticated], serializer_class=DealerSerializer)
     def dealer_list(self, request):
-       # find all dealers present in sales table
         dealers = Dealer.objects.filter(sales__isnull=False).distinct()
         serializer = DealerSerializer(dealers, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['get'], url_path='daily_total_pages', permission_classes=[IsAuthenticated])
+    def daily_total_pages(self, request):
+        queryset = self.queryset.order_by('date')
+        first_date = queryset.first().date
+        last_date = date.today()
+
+        first_date -= timedelta(days=first_date.weekday())
+        last_date += timedelta(days=(7 - last_date.weekday()))
+
+        total_weeks = (last_date - first_date).days // 7
+        cache.set('total_sales_weeks', total_weeks, timeout=60*60)
+        return Response({'total_pages': total_weeks})
+
     @action(detail=False, methods=['get'], url_path='daily_view', permission_classes=[IsAuthenticated])
     def daily_view(self, request):
-        cache_key = 'daily_sales_data'
-        cached_data = cache.get(cache_key)
+        page_number = int(request.query_params.get('page', 1))
+        total_pages = cache.get('total_sales_weeks')
+        page_number = total_pages - page_number + 1
 
-        if cached_data:
-            data = cached_data
-        else:
-            queryset = self.queryset.order_by('date')
-            first_date = queryset.first().date
-            last_date = date.today()
-            first_date -= timedelta(days=first_date.weekday())
-            last_date += timedelta(days=(7 - last_date.weekday()))
-            data = []
-            day_list = ['Monday', 'Tuesday', 'Wednesday',
-                        'Thursday', 'Friday', 'Saturday', 'Sunday']
-            for single_date in daterange(first_date, last_date):
-                date_data = queryset.filter(date=single_date)
-                # total ammount of that day
-                sales = date_data.aggregate(total_sales=Sum('amount'))[
-                    'total_sales'] or 0
+        current_sunday = date.today() - timedelta(days=date.today().weekday())
+        start_date = current_sunday - timedelta(days=(page_number - 1) * 7)
+        end_date = start_date + timedelta(days=6)
 
-                data.append({
-                    'day': day_list[single_date.weekday()],
-                    'date': single_date,
-                    'sales': sales
-                })
+        queryset = self.queryset.filter(date__range=[start_date, end_date]).order_by('date')
 
-            cache.set(cache_key, data, timeout=60*60)
+        days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        data = []
 
-        paginator = DailySalesPagination()
-        page = paginator.paginate_queryset(data, request)
-        if page is not None:
-            return paginator.get_paginated_response(page)
-        return Response(data)
+        for single_date in (start_date + timedelta(n) for n in range(7)):
+            date_data = queryset.filter(date=single_date)
+            sales = date_data.aggregate(total_sales=Sum('amount'))['total_sales'] or 0
+            data.append({
+                'day': days[single_date.weekday()],
+                'date': single_date,
+                'sales': sales
+            })
+
+        result = {
+            'date_range': {
+                'start': start_date,
+                'end': end_date
+            },
+            'results': data
+        }
+        return Response(result)
+
+    @action(detail=False, methods=['get'], url_path='monthly_total_pages', permission_classes=[IsAuthenticated])
+    def monthly_total_pages(self, request):
+        queryset = self.queryset.order_by('date')
+        first_year = queryset.first().date.year
+        last_year = queryset.last().date.year
+        total_years = last_year - first_year + 1
+        cache.set('total_sales_years', total_years, timeout=60*60)
+        return Response({'total_pages': total_years})
 
     @action(detail=False, methods=['get'], url_path='monthly_view', permission_classes=[IsAuthenticated])
     def monthly_view(self, request):
-        cache_key = 'monthly_sales_data'
-        cached_data = cache.get(cache_key)
-        if cached_data:
-            data = cached_data
-        else:
-            queryset = self.queryset.order_by('date')
-            first_year = queryset.first().date.year
-            last_year = queryset.last().date.year
-            months = ['January', 'February', 'March', 'April', 'May', 'June',
-                      'July', 'August', 'September', 'October', 'November', 'December']
-            data = []
-            for year in range(first_year, last_year + 1):
-                for month in range(1, 13):
-                    sales = queryset.filter(date__year=year, date__month=month).aggregate(
-                        total_sales=Sum('amount'))['total_sales'] or 0
+        page_number = int(request.query_params.get('page', 1))
+        total_pages = cache.get('total_sales_years')
+        page_number = total_pages - page_number + 1
 
-                    data.append({
-                        'year': year,
-                        'month': months[month - 1],
-                        'sales': sales
-                    })
-            cache.set(cache_key, data, timeout=60*60)
+        queryset = self.queryset.order_by('date')
+        current_year = date.today().year
+        target_year = current_year - page_number + 1
+        start_month = date(target_year, 1, 1)
+        end_month = date(target_year, 12, 31)
+        data = []
+        months = ['January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December']
 
-        paginator = MonthlySalesPagination()
-        page = paginator.paginate_queryset(data, request)
-        if page is not None:
-            return paginator.get_paginated_response(page)
-        return Response(data)
+        for month in range(1, 13):
+            sales = queryset.filter(date__year=target_year, date__month=month).aggregate(
+                total_sales=Sum('amount'))['total_sales'] or 0
+            data.append({
+                'month': months[month - 1],
+                'year': target_year,
+                'sales': sales
+            })
 
-    @action(detail=False, methods=['get'], url_path='clear_cache', permission_classes=[IsAuthenticated])
-    def clear_cache(self, request):
-        cache.delete('daily_sales_data')
-        cache.delete('monthly_sales_data')
-        return Response({'message': 'cache cleared'}, status=status.HTTP_200_OK)
+        result = {
+            'month_range': {
+                'start': f'January {target_year}',
+                'end': f'December {target_year}'
+            },
+            'results': data
+        }
+        return Response(result)
 
+   
 
 class EarningViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
@@ -723,7 +746,8 @@ class CurrentFeedViewSet(viewsets.ModelViewSet):
     def update(self, request, pk=None):
         try:
             instance = self.get_object()
-            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer = self.get_serializer(
+                instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
             return Response(serializer.data)
@@ -732,13 +756,16 @@ class CurrentFeedViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='total_stock', permission_classes=[IsAuthenticated])
     def total_stock(self, request):
-        total_stock = CurrentFeed.objects.aggregate(total_stock=Sum('quantity'))['total_stock'] or 0
+        total_stock = CurrentFeed.objects.aggregate(
+            total_stock=Sum('quantity'))['total_stock'] or 0
         return Response({'total_stock': total_stock})
 
     def perform_update(self, serializer):
         instance = serializer.save()
         if instance.quantity == 0:
             instance.delete()
+
+
 class ClearCacheView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -753,9 +780,10 @@ class ClearCacheView(APIView):
         cache.delete('monthly_earning_data')
         return Response({'message': 'cache cleared'}, status=status.HTTP_200_OK)
 
+
 class ChatbotView(APIView):
     permission_classes = [IsAuthenticated]
-    
+
     PERIOD_CHOICES = {
         'today': {
             'start_date': lambda: datetime.now().date(),
@@ -786,7 +814,7 @@ class ChatbotView(APIView):
             'end_date': lambda: datetime(datetime.now().year, datetime.now().month, datetime.now().day).date(),
         },
     }
-    
+
     mapping = {
         'today': 'today',
         'this_week': 'this week',
@@ -801,50 +829,63 @@ class ChatbotView(APIView):
         if selected_type == 'sales':
             queryset = Sales.objects.all()
             if selected_period in self.PERIOD_CHOICES:
-                start_date = self.PERIOD_CHOICES[selected_period]['start_date']()
+                start_date = self.PERIOD_CHOICES[selected_period]['start_date'](
+                )
                 end_date = self.PERIOD_CHOICES[selected_period]['end_date']()
                 queryset = queryset.filter(date__range=[start_date, end_date])
-                total_sales = queryset.aggregate(total_sales=Sum('amount'))['total_sales'] or 0
+                total_sales = queryset.aggregate(total_sales=Sum('amount'))[
+                    'total_sales'] or 0
                 return Response({'data': f'₹{total_sales} sales {self.mapping[selected_period]}'})
-        
+
         elif selected_type == 'expenses':
             queryset = Expense.objects.all()
             if selected_period in self.PERIOD_CHOICES:
-                start_date = self.PERIOD_CHOICES[selected_period]['start_date']()
+                start_date = self.PERIOD_CHOICES[selected_period]['start_date'](
+                )
                 end_date = self.PERIOD_CHOICES[selected_period]['end_date']()
                 queryset = queryset.filter(date__range=[start_date, end_date])
-                total_expense = queryset.aggregate(total_expense=Sum('amount'))['total_expense'] or 0
+                total_expense = queryset.aggregate(total_expense=Sum('amount'))[
+                    'total_expense'] or 0
                 return Response({'data': f'₹{total_expense} spent {self.mapping[selected_period]}'})
-        
+
         elif selected_type == 'earning':
             sales_queryset = Sales.objects.all()
             expense_queryset = Expense.objects.all()
             if selected_period in self.PERIOD_CHOICES:
-                start_date = self.PERIOD_CHOICES[selected_period]['start_date']()
+                start_date = self.PERIOD_CHOICES[selected_period]['start_date'](
+                )
                 end_date = self.PERIOD_CHOICES[selected_period]['end_date']()
-                sales_queryset = sales_queryset.filter(date__range=[start_date, end_date])
-                expense_queryset = expense_queryset.filter(date__range=[start_date, end_date])
-                total_sales = sales_queryset.aggregate(total_sales=Sum('amount'))['total_sales'] or 0
-                total_expense = expense_queryset.aggregate(total_expense=Sum('amount'))['total_expense'] or 0
+                sales_queryset = sales_queryset.filter(
+                    date__range=[start_date, end_date])
+                expense_queryset = expense_queryset.filter(
+                    date__range=[start_date, end_date])
+                total_sales = sales_queryset.aggregate(total_sales=Sum('amount'))[
+                    'total_sales'] or 0
+                total_expense = expense_queryset.aggregate(total_expense=Sum('amount'))[
+                    'total_expense'] or 0
                 total_earning = total_sales - total_expense
                 return Response({'data': f'₹{total_earning} earnt {self.mapping[selected_period]}'})
-        
+
         elif selected_type == 'eggs_collected':
             queryset = DailyEggCollection.objects.all()
             if selected_period in self.PERIOD_CHOICES:
-                start_date = self.PERIOD_CHOICES[selected_period]['start_date']()
+                start_date = self.PERIOD_CHOICES[selected_period]['start_date'](
+                )
                 end_date = self.PERIOD_CHOICES[selected_period]['end_date']()
                 queryset = queryset.filter(date__range=[start_date, end_date])
-                total_eggs = queryset.aggregate(total_eggs=Sum('quantity'))['total_eggs'] or 0
+                total_eggs = queryset.aggregate(total_eggs=Sum('quantity'))[
+                    'total_eggs'] or 0
                 return Response({'data': f'{total_eggs} eggs collected {self.mapping[selected_period]}'})
-        
+
         elif selected_type == 'eggs_sold':
             queryset = Sales.objects.all()
             if selected_period in self.PERIOD_CHOICES:
-                start_date = self.PERIOD_CHOICES[selected_period]['start_date']()
+                start_date = self.PERIOD_CHOICES[selected_period]['start_date'](
+                )
                 end_date = self.PERIOD_CHOICES[selected_period]['end_date']()
                 queryset = queryset.filter(date__range=[start_date, end_date])
-                total_eggs = queryset.aggregate(total_eggs=Sum('quantity'))['total_eggs'] or 0
+                total_eggs = queryset.aggregate(total_eggs=Sum('quantity'))[
+                    'total_eggs'] or 0
                 return Response({'data': f'{total_eggs} eggs sold {self.mapping[selected_period]}'})
-        
+
         return Response({'error': 'Invalid type or period'}, status=400)

@@ -61,26 +61,7 @@ const AddSalesForm = ({ onClose, onSalesAdded }) => {
     fetchCurrentStock();
     fetchDealers();
   }, []);
-
-  const clearBackendCache = async () => {
-    try {
-      const response = await fetch("http://127.0.0.1:8000/api/clear_cache/", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
-      if (response.ok) {
-        const result = await response.json();
-        console.log(result.message);
-      } else {
-        console.error("Failed to clear cache");
-      }
-    } catch (error) {
-      console.error("Error clearing cache:", error);
-    }
-  };
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -130,8 +111,7 @@ const AddSalesForm = ({ onClose, onSalesAdded }) => {
 
         if (response.ok) {
           console.log("Sale added successfully");
-          eventBus.dispatch("newSaleDataAdded", { newSaleDataAdded: true });
-          await clearBackendCache();
+          eventBus.dispatch("newSaleDataAdded", { newSaleDataAdded: true });         
           onSalesAdded();
         } else {
           console.error("Failed to add sale");

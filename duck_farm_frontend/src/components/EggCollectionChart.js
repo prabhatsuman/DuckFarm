@@ -67,7 +67,7 @@ const EggCollectionChart = () => {
   const fetchTotalDailyPages = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/egg_stock/daily_view/`,
+        `http://127.0.0.1:8000/api/egg_stock/daily_total_pages/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -75,10 +75,10 @@ const EggCollectionChart = () => {
         }
       );
       const result = await response.json();
-      setDailyTotalPages(result.count);
+      setDailyTotalPages(result.total_pages);
 
-      setDailyPage(result.count);
-      await fetchDailyData(result.count);
+      setDailyPage(result.total_pages);
+      await fetchDailyData(result.total_pages);
     } catch (error) {
       console.error("Error fetching total pages:", error);
     }
@@ -86,7 +86,7 @@ const EggCollectionChart = () => {
   const fetchTotalMonthlyPages = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/egg_stock/monthly_view/`,
+        `http://127.0.0.1:8000/api/egg_stock/monthly_total_pages/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -94,9 +94,9 @@ const EggCollectionChart = () => {
         }
       );
       const result = await response.json();
-      setMonthlyTotalPages(result.count);
-      setMonthlyPage(result.count);
-      await fetchMonthlyData(result.count);
+      setMonthlyTotalPages(result.total_pages);
+      setMonthlyPage(result.total_pages);
+      await fetchMonthlyData(result.total_pages);
     } catch (error) {
       console.error("Error fetching total pages:", error);
     }
@@ -134,8 +134,7 @@ const EggCollectionChart = () => {
         }
       );
       const result = await response.json();
-      setMonthlyData(result.results);
-      setMonthlyTotalPages(result.count);
+      setMonthlyData(result.results);      
       setMonthlyDateRange(
         `From ${result.month_range.start} to ${result.month_range.end}`
       );
