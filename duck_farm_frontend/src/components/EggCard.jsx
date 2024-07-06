@@ -1,35 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { FiChevronDown, FiPlus } from 'react-icons/fi'; // Import icons from react-icons library
-import AddEggForm from './AddEggForm'; // Import the AddEggForm component
-import API_URL from '../config';
+import React, { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "react-query";
+import { FiChevronDown, FiPlus } from "react-icons/fi";
+import AddEggForm from "./AddEggForm";
+import eventBus from "../utils/eventBus";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {faEgg} from '@fortawesome/free-solid-svg-icons';
+import API_URL from "../config";
 
-const EggCard = ({ logoUrl }) => {
-  const [totalEggs, setTotalEggs] = useState(0);
-  const [showAddEggForm, setShowAddEggForm] = useState(false);
-  const [showOptions, setShowOptions] = useState(false); // State to toggle options visibility
-
-  useEffect(() => {
-    fetchTotalEggs();
-  }, []);
-
-    const fetchTotalEggs = async () => {
-        try {
-            const response = await fetch(`${API_URL}/api/egg_stock/total_stock/`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                }
-            });
-
-      if (response.ok) {
-        const data = await response.json();
-        setTotalEggs(data.total_stock);
-      } else {
-        console.error('Failed to fetch total eggs');
-      }
-    } catch (error) {
-      console.error('Error fetching total eggs:', error);
+const fetchTotalEggs = async () => {
+  
+  const response = await fetch(
+    `${API_URL}/api/egg_stock/total_stock/`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
     }
-  };
+  );
+
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.json();
+};
+
+const EggCard = () => {
+  const [showAddEggForm, setShowAddEggForm] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+
+  const queryClient = useQueryClient();
+
+  const {
+    data: totalStockData,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery(["totalEggs"], fetchTotalEggs, {
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+  });
 
   const handleToggleOptions = () => {
     setShowOptions(!showOptions);
@@ -37,14 +47,18 @@ const EggCard = ({ logoUrl }) => {
 
   const handleAddEggs = () => {
     setShowAddEggForm(true);
-    setShowOptions(false); // Close options when adding eggs
+    setShowOptions(false);
   };
 
   const handleOutsideClick = (e) => {
-    if (!e.target.closest(".options-container") && !e.target.closest(".options-toggle")) {
+    if (
+      !e.target.closest(".options-container") &&
+      !e.target.closest(".options-toggle")
+    ) {
       setShowOptions(false);
     }
   };
+
 
   useEffect(() => {
     document.addEventListener("mousedown", handleOutsideClick);
@@ -52,6 +66,21 @@ const EggCard = ({ logoUrl }) => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
   }, []);
+
+  useEffect(() => {
+    const addEggHandler = () => {
+      refetch();
+    };
+    eventBus.on("newEggDataAdded", addEggHandler);
+    return () => {
+      eventBus.remove("newEggDataAdded", addEggHandler);
+    };
+  }, [refetch]);
+
+   
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading data</div>;
 
   return (
     <div className="px-4 py-5 sm:p-6 relative">
@@ -79,10 +108,12 @@ const EggCard = ({ logoUrl }) => {
       <div className="flex items-center justify-between">
         <div className="mt-4">
           <h3 className="text-xl font-medium text-gray-900">Egg Stock</h3>
-          <p className="mt-2 text-black text-left">{totalEggs} eggs</p>
+          <p className="mt-2 text-black text-left">
+            {totalStockData.total_stock} eggs
+          </p>
         </div>
         <div className="flex items-center">
-          <img src={logoUrl} alt="Egg Logo" className="object-cover h-20 w-16 mr-3" />
+          <FontAwesomeIcon icon={faEgg} size="5x" className=" text-slate-600" />
         </div>
       </div>
       {showAddEggForm && (
@@ -90,7 +121,7 @@ const EggCard = ({ logoUrl }) => {
           onClose={() => setShowAddEggForm(false)}
           onEggAdded={() => {
             setShowAddEggForm(false);
-            fetchTotalEggs(); // Refresh the total eggs count
+            queryClient.invalidateQueries(["totalEggs"]);
           }}
         />
       )}

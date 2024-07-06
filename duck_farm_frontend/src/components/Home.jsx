@@ -10,7 +10,6 @@ import EarningChart from "./EarningChart";
 import { FiChevronLeft, FiChevronRight, FiMessageCircle } from "react-icons/fi";
 import ChatBotPopup from "./ChatBotPopup";
 
-
 const Home = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -28,22 +27,22 @@ const Home = () => {
       <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1 */}
         <div className="bg-slate-300 overflow-hidden shadow rounded-lg">
-          <DuckCard logoUrl="/images/duck_logo.png" />
+          <DuckCard />
         </div>
 
         {/* Card 2 */}
         <div className="bg-slate-300 overflow-hidden shadow rounded-lg">
-          <EggCard logoUrl="/images/egg_logo.png" />
+          <EggCard  />
         </div>
 
         {/* Card 3 */}
         <div className="bg-slate-300 overflow-hidden shadow rounded-lg">
-          <FeedStockCard logoUrl="/images/feed_logo.png" />
+          <FeedStockCard />
         </div>
 
         {/* Card 4 */}
         <div className="bg-slate-300 overflow-hidden shadow rounded-lg">
-          <EarningCard logoUrl="/images/earning_logo.png" />
+          <EarningCard />
         </div>
       </div>
 

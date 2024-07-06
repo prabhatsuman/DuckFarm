@@ -19,7 +19,7 @@ const AddDealerForm = ({ onClose, onDealerAdded }) => {
       [name]: value
     }));
   };
-
+sr
   const handleSubmit = async e => {
     e.preventDefault();
     if (isConfirming) {

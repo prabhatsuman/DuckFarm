@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { getTodayDate } from "../utils/getTodayDate";
 import eventBus from "../utils/eventBus";
 import API_URL from "../config";
-
 const AddSalesForm = ({ onClose, onSalesAdded }) => {
   const [formData, setFormData] = useState({
     date: "",
@@ -62,7 +61,6 @@ const AddSalesForm = ({ onClose, onSalesAdded }) => {
     fetchCurrentStock();
     fetchDealers();
   }, []);
-  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -98,7 +96,7 @@ const AddSalesForm = ({ onClose, onSalesAdded }) => {
 
     if (isConfirming) {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/sales/", {
+        const response = await fetch(`${API_URL}/api/sales/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -112,7 +110,9 @@ const AddSalesForm = ({ onClose, onSalesAdded }) => {
 
         if (response.ok) {
           console.log("Sale added successfully");
-          eventBus.dispatch("newSaleDataAdded", { newSaleDataAdded: true });         
+          eventBus.dispatch("newSaleDataAdded", { newSaleDataAdded: true });
+          eventBus.dispatch("newEarningDataAdded", { newEarningDataAdded: true });
+          eventBus.dispatch("newEggDataAdded", { newEggDataAdded: true });
           onSalesAdded();
         } else {
           console.error("Failed to add sale");

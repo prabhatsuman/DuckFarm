@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm i
 
 # Copy the project files
 COPY . .
@@ -16,4 +16,4 @@ RUN npm run build
 
 # Serve the React app
 RUN npm install -g serve
-CMD ["serve", "-s", "build"]
+CMD ["serve", "-s", "dist"]

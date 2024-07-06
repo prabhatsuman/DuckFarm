@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getTodayDate } from "../utils/getTodayDate";
+import eventBus from "../utils/eventBus";
 import API_URL from "../config";
 
 const AddDuckForm = ({ onClose, onDuckAdded }) => {
@@ -86,6 +87,9 @@ const AddDuckForm = ({ onClose, onDuckAdded }) => {
       });
 
       if (response.ok) {
+        eventBus.dispatch("newExpenseDataAdded", { newExpenseDataAdded: true });
+        eventBus.dispatch("newEarningDataAdded", { newEarningDataAdded: true }); 
+
         onDuckAdded();
       } else {
         console.error("Failed to add duck");

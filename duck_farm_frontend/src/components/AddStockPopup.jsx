@@ -3,6 +3,7 @@ import { getTodayDate } from "../utils/getTodayDate";
 import eventBus from "../utils/eventBus";
 import API_URL from "../config";
 
+
 const AddStockPopup = ({ onClose, onCreate }) => {
   const stockTypes = ["feed", "medicine", "other"];
   const [selectedStockType, setSelectedStockType] = useState("");
@@ -81,8 +82,11 @@ const AddStockPopup = ({ onClose, onCreate }) => {
       if (response.ok) {
         console.log("Stock added successfully");
         eventBus.dispatch("newExpenseDataAdded", { newExpenseDataAdded: true });
-        eventBus.dispatch("newEarningDataAdded", { newEarningDataAdded: true });        
+        eventBus.dispatch("newEarningDataAdded", { newEarningDataAdded: true }); 
+        eventBus.dispatch("newFeedDataAdded", { newFeedDataAdded: true });
         onCreate();
+           
+
       } else {
         console.error("Failed to add stock");
       }

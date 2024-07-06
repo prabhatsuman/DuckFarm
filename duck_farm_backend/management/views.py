@@ -470,8 +470,7 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
         queryset = self.queryset.filter(
             date__range=[start_date, end_date]).order_by('date')
 
-        days = ['Sunday', 'Monday', 'Tuesday',
-                'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         data = []
 
         for single_date in (start_date + timedelta(n) for n in range(7)):
@@ -612,7 +611,7 @@ class SalesViewSet(viewsets.ModelViewSet):
 
         queryset = self.queryset.filter(date__range=[start_date, end_date]).order_by('date')
 
-        days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        days=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         data = []
 
         for single_date in (start_date + timedelta(n) for n in range(7)):
@@ -695,18 +694,12 @@ class EarningViewSet(viewsets.ViewSet):
             return Response({'total_earning': total_earning, 'total_expense': total_expense, 'total_sales': total_sales})
 
     @action(detail=False, methods=['get'], url_path='this_month', permission_classes=[IsAuthenticated])
-    def this_month(self, request):
-        cache_key = 'total_earning_data'
-        cached_data = cache.get(cache_key)
-        if cached_data:
-            return Response(cached_data)
-        else:
-            total_expense = Expense.objects.filter(date__month=date.today().month).aggregate(total_expense=Sum('amount'))[
-                'total_expense'] or 0
-            total_sales = Sales.objects.filter(date__month=date.today().month).aggregate(total_sales=Sum('amount'))[
-                'total_sales'] or 0
-            total_earning = total_sales - total_expense
-            return Response({'total_earnings': total_earning})
+    def this_month(self, request):       
+        total_expense = Expense.objects.filter(date__month=date.today().month,date__year=date.today().year).aggregate(total_expense=Sum('amount'))['total_expense'] or 0
+        total_sales = Sales.objects.filter(date__month=date.today().month,date__year=date.today().year).aggregate(total_sales=Sum('amount'))['total_sales'] or 0
+        print(total_sales, total_expense)
+        total_earning = total_sales - total_expense
+        return Response({'total_earnings': total_earning})
         
     @action(detail=False, methods=['get'], url_path='monthly_total_pages', permission_classes=[IsAuthenticated])
     def monthly_total_pages(self, request):
@@ -733,7 +726,7 @@ class EarningViewSet(viewsets.ViewSet):
                   'July', 'August', 'September', 'October', 'November', 'December']
         
         for month in range(1,13):
-            total_sales = queryset.filter(date__year=target_year, date__month=month).aggregate(total_sales=Sum('amount'))['total_sales'] or 0
+            total_sales = Sales.objects.filter(date__year=target_year, date__month=month).aggregate(total_sales=Sum('amount'))['total_sales'] or 0
             total_expense = Expense.objects.filter(date__year=target_year, date__month=month).aggregate(total_expense=Sum('amount'))['total_expense'] or 0
             total_earning = total_sales - total_expense
             data.append({

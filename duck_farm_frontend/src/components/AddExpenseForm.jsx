@@ -81,8 +81,9 @@ const AddExpenseForm = ({ onClose, onExpenseAdded }) => {
       if (response.ok) {
         console.log("Expense added successfully");
         eventBus.dispatch("newExpenseDataAdded", { newExpenseDataAdded: true });
-        eventBus.dispatch("newEarningDataAdded", { newEarningDataAdded: true });        
+        eventBus.dispatch("newEarningDataAdded", { newEarningDataAdded: true });   
         onExpenseAdded();
+           
       } else {
         console.error("Failed to add expense");
       }

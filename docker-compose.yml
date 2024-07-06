@@ -69,11 +69,14 @@ services:
     container_name: duck_farm_frontend
     volumes:
       - ./duck_farm_frontend:/app
-      - react_build:/app/build  # Mount the volume here
+      - react_build:/app/dist  # Mount the volume here
     networks:
       - duck_farm_network
     ports:
       - "3000:3000"
+    depends_on:
+      - duck_farm_backend
+      
 
 networks:
   duck_farm_network:

@@ -1,38 +1,44 @@
+// FeedStockCard.js
 import React, { useState, useEffect } from "react";
 import { FiChevronDown, FiPlus } from "react-icons/fi"; // Import icons from react-icons library
 import FeedUsePopup from "./FeedUsePopup"; // Import the FeedUsePopup component
-import API_URL from '../config';
+import { useQuery, useQueryClient } from "react-query";
+import eventBus from "../utils/eventBus";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {faPlateWheat} from '@fortawesome/free-solid-svg-icons';
+import API_URL from "../config";
+const fetchTotalFeed = async () => {
+  const response = await fetch(
+    `${API_URL}/api/current_feed/total_stock/`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    }
+  );
 
-const FeedStockCard = ({ logoUrl }) => {
-  const [totalFeed, setTotalFeed] = useState(0);
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+
+  const data = await response.json();
+  return data.total_stock;
+};
+
+const FeedStockCard = () => {
   const [showFeedUsePopup, setShowFeedUsePopup] = useState(false); // State to toggle feed use popup visibility
   const [showOptions, setShowOptions] = useState(false); // State to toggle options visibility
 
-  useEffect(() => {
-    fetchTotalFeed();
-  }, []);
-
-  const fetchTotalFeed = async () => {
-    try {
-      const response = await fetch(
-        `${API_URL}/api/current_feed/total_stock/`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setTotalFeed(data.total_stock);
-      } else {
-        console.error("Failed to fetch total feed");
-      }
-    } catch (error) {
-      console.error("Error fetching total feed:", error);
-    }
-  };
+  const queryClient = useQueryClient();
+  const {
+    data: totalFeed,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery(["totalFeed"], fetchTotalFeed, {
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+  });
 
   const handleToggleOptions = () => {
     setShowOptions(!showOptions);
@@ -51,13 +57,30 @@ const FeedStockCard = ({ logoUrl }) => {
       setShowOptions(false);
     }
   };
-
   useEffect(() => {
+    const FeedHandler = () => {
+      refetch();
+    };
+    eventBus.on("newFeedDataAdded", FeedHandler);
+    return () => {
+      eventBus.remove("newFeedDataAdded", FeedHandler);
+    };
+  }, [refetch]);
+
+  React.useEffect(() => {
     document.addEventListener("mousedown", handleOutsideClick);
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
   }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading data</div>;
+  }
 
   return (
     <div className="px-4 py-5 sm:p-6 relative">
@@ -85,23 +108,20 @@ const FeedStockCard = ({ logoUrl }) => {
       <div className="flex items-center justify-between">
         <div className="mt-4">
           <h3 className="text-xl font-medium text-gray-900">Feed Stock</h3>
-          <p className="mt-2 text-black text-left">
-            {totalFeed} Kg
-          </p>
+          <p className="mt-2 text-black text-left">{totalFeed} Kg</p>
         </div>
         <div className="flex items-center">
-          <img
-            src={logoUrl}
-            alt="Feed Logo"
-            className="object-cover h-20 w-20 mr-3"
-          />
+            <FontAwesomeIcon
+                icon={faPlateWheat}
+                className="object-cover h-20 w-20 mr-3"
+            />
         </div>
       </div>
       {showFeedUsePopup && (
         <FeedUsePopup
           onClose={() => setShowFeedUsePopup(false)}
           onFeedUsed={() => {
-            fetchTotalFeed();
+            queryClient.invalidateQueries(["totalFeed"]);
             setShowFeedUsePopup(false);
           }}
         />
