@@ -68,7 +68,7 @@ const FeedUsePopup = ({ onClose,onFeedUsed }) => {
         const { id, usage } = item;
         if (usage > 0) {
           await axios.put(
-            `http://127.0.0.1:8000/api/current_feed/${id}/`,
+            `${API_URL}/api/current_feed/${id}/`,
             { quantity: item.quantity - usage },
             {
               headers: {
