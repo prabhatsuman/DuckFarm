@@ -5,10 +5,6 @@ FROM python:3.10-alpine
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Install dependencies
-RUN apk update \
-    && apk add postgresql-dev gcc python3-dev musl-dev \
-    && apk add jpeg-dev zlib-dev
 
 # Create and set the working directory
 WORKDIR /app

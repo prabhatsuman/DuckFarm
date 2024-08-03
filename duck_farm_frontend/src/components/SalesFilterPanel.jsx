@@ -116,7 +116,7 @@ const SalesFilterPanel = ({ onFilterChange,totalAmount,totalQauntity }) => {
         <label className="block text-sm font-medium text-gray-950 mb-1">
           Date Range
         </label>
-        <div className="flex space-x-2">
+        <div className="flex-col space-y-2">
           <input
             type="date"
             value={filters.startDate ? filters.startDate.toISOString().substr(0, 10) : ""}
