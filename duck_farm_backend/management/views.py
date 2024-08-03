@@ -447,7 +447,7 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='daily_total_pages', permission_classes=[IsAuthenticated])
     def daily_total_pages(self, request):
         queryset = self.queryset.order_by('date')
-        first_date = queryset.first().date
+        first_date = queryset.first().date if queryset.exists() else date.today()
         last_date = date.today()
 
         first_date -= timedelta(days=first_date.weekday())
@@ -494,8 +494,9 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='monthly_total_pages', permission_classes=[IsAuthenticated])
     def monthly_total_pages(self, request):
         queryset = self.queryset.order_by('date')
-        first_year = queryset.first().date.year
-        last_year = queryset.last().date.year
+        #if no data present than first date will be today's date
+        first_year = queryset.first().date.year if queryset.exists() else date.today().year
+        last_year = queryset.last().date.year if queryset.exists() else date.today().year
         total_years = last_year - first_year + 1
         cache.set('total_years', total_years, timeout=60*60)
         return Response({'total_pages': total_years})
@@ -589,7 +590,8 @@ class SalesViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='daily_total_pages', permission_classes=[IsAuthenticated])
     def daily_total_pages(self, request):
         queryset = self.queryset.order_by('date')
-        first_date = queryset.first().date
+        
+        first_date = queryset.first().date if queryset.exists() else date.today()
         last_date = date.today()
 
         first_date -= timedelta(days=first_date.weekday())
@@ -635,8 +637,8 @@ class SalesViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='monthly_total_pages', permission_classes=[IsAuthenticated])
     def monthly_total_pages(self, request):
         queryset = self.queryset.order_by('date')
-        first_year = queryset.first().date.year
-        last_year = queryset.last().date.year
+        first_year = queryset.first().date.year if queryset.exists() else date.today().year
+        last_year = queryset.last().date.year if queryset.exists() else date.today().year
         total_years = last_year - first_year + 1
         cache.set('total_sales_years', total_years, timeout=60*60)
         return Response({'total_pages': total_years})
@@ -704,8 +706,8 @@ class EarningViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get'], url_path='monthly_total_pages', permission_classes=[IsAuthenticated])
     def monthly_total_pages(self, request):
         queryset = Sales.objects.order_by('date')
-        first_year = queryset.first().date.year
-        last_year = queryset.last().date.year
+        first_year = queryset.first().date.year if queryset.exists() else date.today().year
+        last_year = queryset.last().date.year if queryset.exists() else date.today().year
         total_years = last_year - first_year + 1
         cache.set('total_earning_years', total_years, timeout=60*60)
         return Response({'total_pages': total_years})
