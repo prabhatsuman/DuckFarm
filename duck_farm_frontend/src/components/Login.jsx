@@ -6,7 +6,6 @@ import API_URL from "../config";
 const Login = ({ toggleComponent }) => {
   const navigate = useNavigate();
   const [loginState, setLoginState] = useState({ email: "", password: "" });
-  const [errorMessage, setErrorMessage] = useState(""); // State for error message
 
   const handleChange = (e) => {
     setLoginState({ ...loginState, [e.target.name]: e.target.value });
@@ -35,20 +34,15 @@ const Login = ({ toggleComponent }) => {
       .catch((error) => {
         console.error("Login failed:", error);
         if (error.response && error.response.data) {
-          setErrorMessage(error.response.data.detail); // Set error message from backend
+          alert("Incorrect Email Or Password"); // Show error message from backend in a popup
         } else {
-          setErrorMessage("An unknown error occurred."); // Set a generic error message
+          alert("An unknown error occurred."); // Show a generic error message in a popup
         }
       });
   };
 
   return (
     <div className="bg-opacity-60 rounded-lg bg-blue-950 py-8 px-4 shadow w-1/2">
-      {errorMessage && (
-        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
-          {errorMessage}
-        </div>
-      )}
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div>
           <div className="mt-1">

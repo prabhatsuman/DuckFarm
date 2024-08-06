@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import API_URL from "../config";
 
-const Signup = ({toggleComponent}) => {
+const Signup = ({ toggleComponent }) => {
   const navigate = useNavigate();
   const [signupState, setSignupState] = useState({
     firstName: "",
@@ -41,10 +41,16 @@ const Signup = ({toggleComponent}) => {
       })
       .then((response) => {
         console.log("Signup successful:", response.data);
-        navigate("/"); 
+        alert("Signup successful!");
+        toggleComponent(); // Toggle component after successful signup
       })
       .catch((error) => {
         console.error("Signup failed:", error);
+        if (error.response && error.response.data) {
+          alert(error.response.data.detail); // Show error message from backend in an alert
+        } else {
+          alert("An unknown error occurred."); // Show a generic error message in an alert
+        }
       });
   };
 
