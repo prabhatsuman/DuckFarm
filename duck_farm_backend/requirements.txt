@@ -5,6 +5,7 @@ django-cors-headers==4.3.1
 django-crontab==0.7.1
 django-filter==24.2
 django-redis==5.4.0
+django-sendgrid-v5==1.2.3
 djangorestframework==3.15.1
 djangorestframework-simplejwt==5.3.1
 Faker==25.8.0
@@ -14,7 +15,10 @@ psycopg2-binary==2.9.9
 PyJWT==2.8.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
+python-http-client==3.3.7
 redis==5.0.6
+sendgrid==6.11.0
 six==1.16.0
 sqlparse==0.5.0
+starkbank-ecdsa==2.2.0
 typing_extensions==4.11.0

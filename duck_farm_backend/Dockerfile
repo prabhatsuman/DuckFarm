@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app/
 
 # Set the Django settings module environment variable
-ENV DJANGO_SETTINGS_MODULE=duck_farm.settings
+ENV DJANGO_SETTINGS_MODULE=duck_farm.settings.production
 
 # Run the Django server
 CMD ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:8000 duck_farm.wsgi:application"]
