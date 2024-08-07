@@ -1,6 +1,6 @@
 from .base import *
 DEBUG = False
-ALLOWED_HOSTS = ['localhost', 'duck_farm_backend']
+ALLOWED_HOSTS = ['*']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
