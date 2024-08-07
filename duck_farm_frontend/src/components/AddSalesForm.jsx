@@ -24,7 +24,7 @@ const AddSalesForm = ({ onClose, onSalesAdded }) => {
           `${API_URL}/api/egg_stock/total_stock/`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+              Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
             },
           }
         );
@@ -44,7 +44,7 @@ const AddSalesForm = ({ onClose, onSalesAdded }) => {
       try {
         const response = await fetch(`${API_URL}/api/dealer_info/`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
         });
         if (response.ok) {
@@ -100,7 +100,7 @@ const AddSalesForm = ({ onClose, onSalesAdded }) => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
           body: JSON.stringify({
             ...formData,

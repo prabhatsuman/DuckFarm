@@ -25,7 +25,7 @@ const DealerInfo = () => {
     try {
       const response = await fetch(`${API_URL}/api/dealer_info/`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
         },
       });
 
@@ -167,6 +167,12 @@ const DealerInfo = () => {
               >
                 Name
               </th>
+              <th
+                scope="col"
+                className="py-4 px-6  text-left text-white uppercase text-sm leading-normal"
+              >
+                Description
+              </th>
 
               <th
                 scope="col"
@@ -204,6 +210,7 @@ const DealerInfo = () => {
             {currentDealers.map((dealer) => (
               <tr key={dealer.id}>
                 <td className="px-6 py-4 w-72">{dealer.name}</td>
+                <td className="px-6 py-4 w-72">{dealer.description}</td>                
                 <td className="px-6 py-4 w-72">{dealer.address}</td>
                 <td className="px-6 py-4">{dealer.email}</td>
                 <td className="px-6 py-4">{dealer.phone_number}</td>

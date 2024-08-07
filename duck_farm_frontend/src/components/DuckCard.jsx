@@ -10,7 +10,7 @@ import API_URL from '../config';
 const fetchTotalDucks = async () => {
     const response = await fetch(`${API_URL}/api/duck_info/total/`, {
         headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
         },
     });
     if (!response.ok) {

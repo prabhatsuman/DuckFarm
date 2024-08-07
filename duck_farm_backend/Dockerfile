@@ -19,5 +19,8 @@ COPY . /app/
 # Set the Django settings module environment variable
 ENV DJANGO_SETTINGS_MODULE=duck_farm.settings.production
 
+# Collect static files
+RUN python manage.py collectstatic --noinput
+
 # Run the Django server
 CMD ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:8000 duck_farm.wsgi:application"]

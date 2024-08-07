@@ -41,7 +41,7 @@ const StockTable = () => {
         `${API_URL}/api/stocks/${stockType}/`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
         }
       );

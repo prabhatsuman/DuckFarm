@@ -25,7 +25,7 @@ const AddDuckForm = ({ onClose, onDuckAdded }) => {
     try {
       const response = await fetch(`${API_URL}/api/duck_info/`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
         },
       });
       const data = await response.json();
@@ -39,7 +39,7 @@ const AddDuckForm = ({ onClose, onDuckAdded }) => {
     try {
       const response = await fetch(`${API_URL}/api/dealer_info/`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
         },
       });
       const data = await response.json();
@@ -81,7 +81,7 @@ const AddDuckForm = ({ onClose, onDuckAdded }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
         },
         body: JSON.stringify(formData),
       });

@@ -54,7 +54,7 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=120),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=25),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -100,7 +100,6 @@ WSGI_APPLICATION = 'duck_farm.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-import os
 
 # Optional: Configure session engine to use Redis
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
@@ -145,11 +144,13 @@ USE_TZ = True
 load_dotenv()
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
-SENDGRID_SANDBOX_MODE_IN_DEBUG = False  # If True, emails are not sent, but logged
+# If True, emails are not sent, but logged
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 
 
 CRONJOBS = [
-    ('30 15 * * *', 'django.core.management.call_command', ['send_daily_email']),
+    ('30 15 * * *', 'django.core.management.call_command',
+     ['send_daily_email']),
     # This runs at 9:00 PM IST (3:30 PM UTC)
 ]
 
@@ -157,8 +158,9 @@ CRONJOBS = [
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 

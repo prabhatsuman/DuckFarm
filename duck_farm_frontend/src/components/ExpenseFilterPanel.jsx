@@ -21,7 +21,7 @@ const ExpenseFilterPanel = ({ onFilterChange, totalAmount }) => {
       try {
         const response = await fetch(`${API_URL}/api/expenses/expense_types/`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
         });
 
@@ -40,7 +40,7 @@ const ExpenseFilterPanel = ({ onFilterChange, totalAmount }) => {
       try {
         const response = await fetch(`${API_URL}/api/expenses/dealer_list/`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
         });
 

@@ -78,7 +78,7 @@ const ExpenseTable = () => {
 
       const response = await fetch(url, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
         },
       });
 

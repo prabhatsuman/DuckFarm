@@ -57,7 +57,7 @@ const ExpenseChart = () => {
         `${API_URL}/api/expenses/monthly_total_pages/`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
         }
       );
@@ -77,7 +77,7 @@ const ExpenseChart = () => {
         `${API_URL}/api/expenses/monthly_view/?page=${page}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
         }
       );

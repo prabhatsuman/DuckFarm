@@ -18,7 +18,7 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
           `${API_URL}/api/egg_stock/by_date/?date=${formData.date}`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+              Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
             },
           }
         );
@@ -51,7 +51,7 @@ const AddEggForm = ({ onClose, onEggAdded }) => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
           body: JSON.stringify(formData),
         });

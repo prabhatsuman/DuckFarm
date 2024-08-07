@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiMenu, FiHome, FiUser, FiLogOut } from "react-icons/fi";
+import API_URL from "../config";
 
 const Navbar = ({ toggleSidebar }) => {
   const navigate = useNavigate();
@@ -8,7 +9,7 @@ const Navbar = ({ toggleSidebar }) => {
 
   useEffect(() => {
     // Fetch username from session or localStorage
-    const storedUsername = localStorage.getItem("username");
+    const storedUsername = localStorage.getItem(`${API_URL}:username`);
     if (storedUsername) {
       setUsername(storedUsername);
     }
@@ -16,8 +17,9 @@ const Navbar = ({ toggleSidebar }) => {
 
   const handleLogout = () => {
     // Clear access token and username from localStorage
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("username");
+    localStorage.removeItem(`${API_URL}:accessToken`);
+    localStorage.removeItem(`${API_URL}:username`);
+    localStorage.removeItem(`${API_URL}:refreshToken`);
     navigate("/");
   };
 

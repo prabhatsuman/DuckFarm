@@ -8,6 +8,7 @@ services:
     restart: always
     volumes:
       - ./duck_farm_backend:/app
+      - duck_farm_static_volume:/app/duck_farm/static
     env_file:
       - .env
     depends_on:
@@ -37,22 +38,6 @@ services:
     container_name: duck_farm_redis
     networks:
       - duck_farm_network
-    
-
-  # pgadmin:
-  #   image: dpage/pgadmin4
-  #   container_name: duck_farm_pgadmin
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: prabhat@gmail.com
-  #     PGADMIN_DEFAULT_PASSWORD: postgres
-  #   ports:
-  #     - "5050:80"
-  #   depends_on:
-  #     - db
-  #   networks:
-  #     - duck_farm_network
-
-  
 
   duck_farm_frontend:
     build:
@@ -61,7 +46,8 @@ services:
     container_name: duck_farm_frontend
     restart: always
     volumes:
-     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - duck_farm_static_volume:/usr/share/nginx/html/static
     networks:
       - duck_farm_network
     ports:
@@ -69,7 +55,6 @@ services:
       - "443:443"
     depends_on:
       - duck_farm_backend
-      
 
 networks:
   duck_farm_network:
@@ -77,4 +62,4 @@ networks:
 
 volumes:
   duck_farm_postgres_data:
-  
+  duck_farm_static_volume:

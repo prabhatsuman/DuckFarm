@@ -3,7 +3,7 @@ import API_URL from "../config";
 
 export const refreshToken = async () => {
     try {
-        const refreshToken = localStorage.getItem('refreshToken');
+        const refreshToken = localStorage.getItem(`${API_URL}:refreshToken`);
         
         if (!refreshToken) {
             throw new Error('No refresh token available');
@@ -19,10 +19,10 @@ export const refreshToken = async () => {
 
         if (response.ok) {
             const data = await response.json();
-            localStorage.setItem('accessToken', data.access);
+            localStorage.setItem(`${API_URL}:accessToken`, data.access);
             // Optionally update refresh token if provided by the server
             if (data.refresh) {
-                localStorage.setItem('refreshToken', data.refresh);
+                localStorage.setItem(`${API_URL}:refreshToken`, data.refresh);
             }
         } else {
             console.error('Failed to refresh token:', response.status, response.statusText);

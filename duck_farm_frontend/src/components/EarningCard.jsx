@@ -10,7 +10,7 @@ const fetchTotalEarnings = async () => {
     `${API_URL}/api/earnings/this_month/`,
     {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
       },
     }
   );

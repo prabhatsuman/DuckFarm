@@ -19,7 +19,6 @@ const AddDealerForm = ({ onClose, onDealerAdded }) => {
       [name]: value
     }));
   };
-sr
   const handleSubmit = async e => {
     e.preventDefault();
     if (isConfirming) {
@@ -28,7 +27,7 @@ sr
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            'Authorization': `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`
           },
           body: JSON.stringify(formData)
         });
@@ -73,7 +72,7 @@ sr
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                className="px-4 py-2 bg-blue-950 text-white rounded-md"
               >
                 Confirm
               </button>

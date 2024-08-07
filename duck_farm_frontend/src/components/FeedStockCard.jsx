@@ -12,7 +12,7 @@ const fetchTotalFeed = async () => {
     `${API_URL}/api/current_feed/total_stock/`,
     {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
       },
     }
   );

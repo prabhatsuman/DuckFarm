@@ -13,7 +13,7 @@ const FeedUsePopup = ({ onClose,onFeedUsed }) => {
 
   const fetchFeeds = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem(`${API_URL}:accessToken`);
       const response = await axios.get(`${API_URL}/api/current_feed/`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -63,7 +63,7 @@ const FeedUsePopup = ({ onClose,onFeedUsed }) => {
 
   const handleSubmit = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem(`${API_URL}:accessToken`);
       const requests = feedUsage.map(async (item) => {
         const { id, usage } = item;
         if (usage > 0) {

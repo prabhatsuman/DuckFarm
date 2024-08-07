@@ -71,7 +71,7 @@ const EggCollectionChart = () => {
         `${API_URL}/api/egg_stock/daily_total_pages/`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
         }
       );
@@ -90,7 +90,7 @@ const EggCollectionChart = () => {
         `${API_URL}/api/egg_stock/monthly_total_pages/`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
         }
       );
@@ -109,7 +109,7 @@ const EggCollectionChart = () => {
         `${API_URL}/api/egg_stock/daily_view/?page=${page}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
         }
       );
@@ -130,7 +130,7 @@ const EggCollectionChart = () => {
         `${API_URL}/api/egg_stock/monthly_view/?page=${page}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
         }
       );

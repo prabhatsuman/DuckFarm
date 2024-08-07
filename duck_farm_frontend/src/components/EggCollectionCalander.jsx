@@ -17,7 +17,7 @@ const EggCollectionCalendar = () => {
     try {
       const response = await fetch(`${API_URL}/api/egg_stock/`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
         },
       });
       const data = await response.json();

@@ -13,7 +13,7 @@ const DuckInfoPopup = ({ onClose }) => {
         try {
             const response = await fetch(`${API_URL}/api/duck_info/`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    'Authorization': `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`
                 }
             });
 
@@ -60,7 +60,7 @@ const DuckInfoPopup = ({ onClose }) => {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    'Authorization': `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`
                 },
                 body: JSON.stringify({
                     [gender === 'male' ? 'male_count' : 'female_count']: updatedCount

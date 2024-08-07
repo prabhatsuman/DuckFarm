@@ -69,7 +69,7 @@ const SalesChart = () => {
         `${API_URL}/api/sales/daily_total_pages/`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
         }
       );
@@ -90,7 +90,7 @@ const SalesChart = () => {
         `${API_URL}/api/sales/monthly_total_pages/`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
         }
       );
@@ -110,7 +110,7 @@ const SalesChart = () => {
         `${API_URL}/api/sales/daily_view/?page=${page}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
         }
       );
@@ -132,7 +132,7 @@ const SalesChart = () => {
         `${API_URL}/api/sales/monthly_view/?page=${page}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
           },
         }
       );
