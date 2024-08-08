@@ -4,42 +4,54 @@ import AddDealerForm from "./AddDealerForm";
 import EditDealerForm from "./EditDealerForm";
 import DeleteDealerConfirmation from "./DeleteDealerConfirmation";
 import { FiEdit, FiTrash, FiPlus, FiDownload } from "react-icons/fi";
+import { useQuery } from "react-query";
 import API_URL from "../config";
 
+// Fetch dealers data using an async function
+const fetchDealers = async () => {
+  const response = await fetch(`${API_URL}/api/dealer_info/`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch dealers");
+  }
+
+  return response.json();
+};
+
 const DealerInfo = () => {
-  const [dealers, setDealers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredDealers, setFilteredDealers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [dealersPerPage] = useState(10);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedDealer, setSelectedDealer] = useState(null);
 
+  const dealersPerPage = 10;
+
+  // Use useQuery to fetch the dealer data
+  const {
+    data: dealers = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery("dealers", fetchDealers, {
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  // Update filteredDealers when dealers or searchTerm changes
   useEffect(() => {
-    fetchDealers();
-  }, []);
-
-  const fetchDealers = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/dealer_info/`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem(`${API_URL}:accessToken`)}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setDealers(data);
-        setFilteredDealers(data);
-      } else {
-        console.error("Failed to fetch dealers");
-      }
-    } catch (error) {
-      console.error("Error fetching dealers:", error);
-    }
-  };
+    const results = dealers.filter((dealer) =>
+      dealer.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredDealers(results);
+    setCurrentPage(1); // Reset to first page when search term changes
+  }, [searchTerm, dealers]);
 
   // Pagination
   const indexOfLastDealer = currentPage * dealersPerPage;
@@ -51,15 +63,6 @@ const DealerInfo = () => {
 
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  // Search functionality
-  useEffect(() => {
-    const results = dealers.filter((dealer) =>
-      dealer.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredDealers(results);
-    setCurrentPage(1); // Reset to first page when search term changes
-  }, [searchTerm, dealers]);
 
   const handleAddDealer = () => {
     setIsAddModalOpen(true);
@@ -83,26 +86,27 @@ const DealerInfo = () => {
 
   const handleDealerAdded = () => {
     setIsAddModalOpen(false);
-    fetchDealers();
+    refetch(); // Refetch the data after a dealer is added
   };
 
   const handleDealerUpdated = () => {
     setIsEditModalOpen(false);
-    fetchDealers();
+    refetch(); // Refetch the data after a dealer is updated
   };
 
   const handleDealerDeleted = () => {
     setIsDeleteModalOpen(false);
-    fetchDealers();
+    refetch(); // Refetch the data after a dealer is deleted
   };
 
   const handleDownloadExcel = () => {
     const data = [
       // Headers
-      ["Name", "Address", "Email", "Phone Number", "Type"],
+      ["Name", "Description", "Address", "Email", "Phone Number", "Type"],
       // Data rows
       ...dealers.map((dealer) => [
         dealer.name,
+        dealer.description,
         dealer.address,
         dealer.email,
         dealer.phone_number,
@@ -110,7 +114,6 @@ const DealerInfo = () => {
       ]),
     ];
 
-    // Generate current date and time for file name
     const currentDate = new Date()
       .toLocaleString("en-US", {
         year: "numeric",
@@ -120,18 +123,21 @@ const DealerInfo = () => {
         minute: "2-digit",
         second: "2-digit",
       })
-      .replace(/[/:]/g, "-"); // Replace slashes and colons to ensure valid file name
+      .replace(/[/:]/g, "-");
 
     const fileName = `dealers-${currentDate}.xlsx`;
 
-    // Create a new workbook and worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Dealers");
 
-    // Save the file
     XLSX.writeFile(workbook, fileName);
   };
+
+  if (isLoading) return <p>Loading...</p>;
+
+  if (error) return <p>Error: {error.message}</p>;
+
   return (
     <div className="m-auto  max-h-screen flex flex-col">
       <div className="flex items-center mb-4 justify-between">
@@ -182,7 +188,7 @@ const DealerInfo = () => {
               </th>
               <th
                 scope="col"
-                className="py-4 px-6  text-left text-white uppercase text-sm leading-normal"
+                className="py-4 px-6 text-left text-white uppercase text-sm leading-normal"
               >
                 Email
               </th>
@@ -210,7 +216,7 @@ const DealerInfo = () => {
             {currentDealers.map((dealer) => (
               <tr key={dealer.id}>
                 <td className="px-6 py-4 w-72">{dealer.name}</td>
-                <td className="px-6 py-4 w-72">{dealer.description}</td>                
+                <td className="px-6 py-4 w-72">{dealer.description}</td>
                 <td className="px-6 py-4 w-72">{dealer.address}</td>
                 <td className="px-6 py-4">{dealer.email}</td>
                 <td className="px-6 py-4">{dealer.phone_number}</td>
@@ -252,21 +258,18 @@ const DealerInfo = () => {
           <button
             onClick={() => paginate(currentPage - 1)}
             disabled={currentPage === 1}
-            className={`px-4 py-2 text-sm font-medium text-white bg-blue-950  rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-              currentPage === 1 ? "cursor-not-allowed opacity-50" : ""
+            className={`px-4 py-2 border border-gray-300 rounded-md ${
+              currentPage === 1 ? "bg-gray-300 cursor-not-allowed" : ""
             }`}
           >
             Previous
           </button>
-          
           <button
             onClick={() => paginate(currentPage + 1)}
-            disabled={
-              currentPage === Math.ceil(filteredDealers.length / dealersPerPage)
-            }
-            className={`px-4 py-2 text-sm font-medium text-white bg-blue-950  rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-              currentPage === Math.ceil(filteredDealers.length / dealersPerPage)
-                ? "cursor-not-allowed opacity-50"
+            disabled={currentPage * dealersPerPage >= filteredDealers.length}
+            className={`px-4 py-2 border border-gray-300 rounded-md ${
+              currentPage * dealersPerPage >= filteredDealers.length
+                ? "bg-gray-300 cursor-not-allowed"
                 : ""
             }`}
           >
@@ -274,6 +277,8 @@ const DealerInfo = () => {
           </button>
         </div>
       </nav>
+
+      {/* Modals */}
       {isAddModalOpen && (
         <AddDealerForm
           onClose={handleModalClose}
