@@ -608,8 +608,10 @@ class SalesViewSet(viewsets.ModelViewSet):
         page_number = total_pages - page_number + 1
 
         current_sunday = date.today() - timedelta(days=date.today().weekday())
+        
         start_date = current_sunday - timedelta(days=(page_number - 1) * 7)
         end_date = start_date + timedelta(days=6)
+        print(date.today(),current_sunday, start_date, end_date)
 
         queryset = self.queryset.filter(date__range=[start_date, end_date]).order_by('date')
 

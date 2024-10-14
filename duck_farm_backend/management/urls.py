@@ -16,7 +16,7 @@ router.register('current_feed', CurrentFeedViewSet)
 
 
 stock_router = DefaultRouter()
-stock_router.register('feed', FeedStockViewSet)
+stock_router.egrister('feed', FeedStockViewSet)
 stock_router.register('medicine', MedicineStockViewSet)
 stock_router.register('other', OtherStockViewSet)
 
