@@ -76,15 +76,18 @@ class LoginView(APIView):
 
 
 class DuckInfoViewSet(viewsets.ModelViewSet):
-    queryset = DuckInfo.objects.all()
     serializer_class = DuckInfoSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        # Automatically filters DuckInfo by the current user
+        return DuckInfo.objects.filter(user=self.request.user)
+
     @action(detail=False, methods=['get'], url_path='total', permission_classes=[IsAuthenticated])
     def total_ducks(self, request):
-        total_male = DuckInfo.objects.aggregate(Sum('male_count'))[
+        total_male = DuckInfo.objects.filter(user=request.user).aggregate(Sum('male_count'))[
             'male_count__sum'] or 0
-        total_female = DuckInfo.objects.aggregate(Sum('female_count'))[
+        total_female = DuckInfo.objects.filter(user=request.user).aggregate(Sum('female_count'))[
             'female_count__sum'] or 0
         total = total_male + total_female
         return Response({'total': total})
@@ -102,8 +105,9 @@ class DuckInfoViewSet(viewsets.ModelViewSet):
         purchase_date = validated_data['purchase_date']
 
         try:
-            # Check if the instance with the same breed exists
-            duck_info = DuckInfo.objects.filter(breed=breed).first()
+            # Check if the instance with the same breed exists for this user
+            duck_info = DuckInfo.objects.filter(
+                breed=breed, user=request.user).first()
 
             if duck_info:
                 # Update the existing instance by incrementing the counts
@@ -116,7 +120,8 @@ class DuckInfoViewSet(viewsets.ModelViewSet):
                 duck_info = DuckInfo.objects.create(
                     breed=breed,
                     male_count=male_count,
-                    female_count=female_count
+                    female_count=female_count,
+                    user=request.user  # Add the current user to the new instance
                 )
 
             # Calculate amount for expenses
@@ -128,7 +133,8 @@ class DuckInfoViewSet(viewsets.ModelViewSet):
                 'date': purchase_date,
                 'amount': amount,
                 'exp_type': 'buy_duck',
-                'dealer': dealer
+                'dealer': dealer,
+                'user': request.user  # Associate the expense with the current user
             }
             Expense.objects.create(**expense_data)
 
@@ -140,18 +146,22 @@ class DuckInfoViewSet(viewsets.ModelViewSet):
 
 
 class DealerViewSet(viewsets.ModelViewSet):
-    queryset = Dealer.objects.all()
     serializer_class = DealerSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Dealer.objects.filter(user=self.request.user)
+
 
 class ExpenseViewSet(viewsets.ModelViewSet):
-    queryset = Expense.objects.all().order_by('-date')
     serializer_class = ExpenseSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = ExpensePagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = ExpenseFilter
+
+    def get_queryset(self):
+        return Expense.objects.filter(user=self.request.user).order_by('-date')
 
     def get_serializer_class(self):
         if self.action == 'create' or self.action == 'update':
@@ -163,7 +173,6 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
-        # Handle case where dealer may not be provided
         dealer = validated_data.get('dealer', None)
         amount = validated_data['amount']
         date = validated_data['date']
@@ -171,13 +180,13 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         description = validated_data.get('description', None)
 
         try:
-            # Create a new instance
             expense = Expense.objects.create(
                 dealer=dealer,
                 amount=amount,
                 date=date,
                 exp_type=exp_type,
-                description=description
+                description=description,
+                user=request.user  # Ensure the expense is linked to the current user
             )
 
             response_serializer = ExpenseSerializer(expense)
@@ -192,7 +201,6 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
-        # Handle case where dealer may not be provided
         dealer = validated_data.get('dealer', None)
         amount = validated_data['amount']
         date = validated_data['date']
@@ -200,7 +208,6 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         description = validated_data.get('description', None)
 
         try:
-            # Update the instance
             instance.dealer = dealer
             instance.amount = amount
             instance.date = date
@@ -216,15 +223,15 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='dealer_list', permission_classes=[IsAuthenticated], serializer_class=DealerSerializer)
     def dealer_list(self, request):
-        dealers = Dealer.objects.filter(expense__isnull=False).distinct()
+        dealers = Dealer.objects.filter(
+            expense__isnull=False, user=request.user).distinct()
         serializer = DealerSerializer(dealers, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'], url_path='expense_types', permission_classes=[IsAuthenticated])
     def expense_types(self, request):
-
         expense_types = Expense.objects.filter(
-            exp_type__isnull=False).distinct()
+            user=request.user, exp_type__isnull=False).distinct()
         return Response(expense_types.values('exp_type').distinct())
 
     def list(self, request, *args, **kwargs):
@@ -236,21 +243,23 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
     @action(detail=False, methods=['get'], url_path='monthly_total_pages', permission_classes=[IsAuthenticated])
     def monthly_total_pages(self, request):
-        queryset = self.queryset.order_by('date')
+        queryset = self.get_queryset().order_by('date')
         first_year = queryset.first().date.year
         last_year = queryset.last().date.year
         total_years = last_year - first_year + 1
-        cache.set('total_expense_years', total_years, timeout=60*60)
+        cache.set(f'total_expense_years_{request.user.id}', total_years, timeout=60 * 60)
         return Response({'total_pages': total_years})
+
     @action(detail=False, methods=['get'], url_path='monthly_view', permission_classes=[IsAuthenticated])
     def monthly_view(self, request):
         page_number = int(request.query_params.get('page', 1))
-        total_pages = cache.get('total_expense_years')
+        total_pages = cache.get(f'total_expense_years_{request.user.id}')
         page_number = total_pages - page_number + 1
 
-        queryset = self.queryset.order_by('date')
+        queryset = self.get_queryset().order_by('date')
         current_year = date.today().year
         target_year = current_year - page_number + 1
         start_month = date(target_year, 1, 1)
@@ -279,9 +288,11 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
 
 class FeedStockViewSet(viewsets.ModelViewSet):
-    queryset = FeedStock.objects.all()
     serializer_class = FeedStockSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return FeedStock.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         serializer = FeedBuySerializer(data=request.data)
@@ -304,7 +315,8 @@ class FeedStockViewSet(viewsets.ModelViewSet):
                 quantity=quantity,
                 price=price,
                 date_of_purchase=date_of_purchase,
-                description=description
+                description=description,
+                user=request.user  # Associate the feed stock with the current user
             )
 
             # Create expenses entry
@@ -313,7 +325,8 @@ class FeedStockViewSet(viewsets.ModelViewSet):
                 'date': date_of_purchase,
                 'amount': price,
                 'exp_type': 'feed',
-                'dealer': dealer
+                'dealer': dealer,
+                'user': request.user  # Associate the expense with the current user
             }
             Expense.objects.create(**expense_data)
 
@@ -325,9 +338,11 @@ class FeedStockViewSet(viewsets.ModelViewSet):
 
 
 class MedicineStockViewSet(viewsets.ModelViewSet):
-    queryset = MedicineStock.objects.all()
     serializer_class = MedicineStockSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return MedicineStock.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         serializer = MedicineBuySerializer(data=request.data)
@@ -352,7 +367,8 @@ class MedicineStockViewSet(viewsets.ModelViewSet):
                 price=price,
                 date_of_purchase=date_of_purchase,
                 date_of_expiry=date_of_expiry,
-                description=description
+                description=description,
+                user=request.user
             )
 
             # Create expenses entry
@@ -361,7 +377,8 @@ class MedicineStockViewSet(viewsets.ModelViewSet):
                 'date': date_of_purchase,
                 'amount': price,
                 'exp_type': 'medicine',
-                'dealer': dealer
+                'dealer': dealer,
+                'user': request.user
             }
             Expense.objects.create(**expense_data)
 
@@ -373,9 +390,11 @@ class MedicineStockViewSet(viewsets.ModelViewSet):
 
 
 class OtherStockViewSet(viewsets.ModelViewSet):
-    queryset = OtherStock.objects.all()
     serializer_class = OtherStockSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return OtherStock.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         serializer = OtherBuySerializer(data=request.data)
@@ -396,7 +415,8 @@ class OtherStockViewSet(viewsets.ModelViewSet):
                 price=price,
                 quantity=quantity,
                 date_of_purchase=date_of_purchase,
-                description=description
+                description=description,
+                user=request.user
             )
 
             # Create expenses entry
@@ -405,7 +425,8 @@ class OtherStockViewSet(viewsets.ModelViewSet):
                 'date': date_of_purchase,
                 'amount': price,
                 'exp_type': 'other',
-                'dealer': dealer
+                'dealer': dealer,
+                'user': request.user
             }
             Expense.objects.create(**expense_data)
 
@@ -417,10 +438,13 @@ class OtherStockViewSet(viewsets.ModelViewSet):
 
 
 class DailyEggCollectionViewSet(viewsets.ModelViewSet):
-    queryset = DailyEggCollection.objects.all()
     serializer_class = DailyEggCollectionSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = DailyEggCollectionPagination
+
+    def get_queryset(self):
+        # Ensure that the queryset is filtered by the current user
+        return DailyEggCollection.objects.filter(user=self.request.user)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset().order_by('date')  # Order queryset by 'date'
@@ -429,7 +453,7 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='total_stock', permission_classes=[IsAuthenticated])
     def total_stock(self, request):
-        egg_stock, created = EggStock.objects.get_or_create(id=1)
+        egg_stock, created = EggStock.objects.get_or_create(user=request.user)
         serializer = EggStockSerializer(egg_stock)
         return Response(serializer.data)
 
@@ -437,7 +461,7 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
     def by_date(self, request):
         date_param = request.query_params.get('date')
         if date_param:
-            queryset = DailyEggCollection.objects.filter(date=date_param)
+            queryset = self.get_queryset().filter(date=date_param)
             serializer = DailyEggCollectionSerializer(queryset, many=True)
             return Response(serializer.data)
         else:
@@ -446,7 +470,7 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='daily_total_pages', permission_classes=[IsAuthenticated])
     def daily_total_pages(self, request):
-        queryset = self.queryset.order_by('date')
+        queryset = self.get_queryset().order_by('date')
         first_date = queryset.first().date if queryset.exists() else date.today()
         last_date = date.today()
 
@@ -454,23 +478,24 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
         last_date += timedelta(days=(7 - last_date.weekday()))
 
         total_weeks = (last_date - first_date).days // 7
-        cache.set('total_weeks', total_weeks, timeout=60*60)
+        cache.set(f'total_weeks_{request.user.id}', total_weeks, timeout=60*60)
         return Response({'total_pages': total_weeks})
 
     @action(detail=False, methods=['get'], url_path='daily_view', permission_classes=[IsAuthenticated])
     def daily_view(self, request):
         page_number = int(request.query_params.get('page', 1))
-        total_pages = cache.get('total_weeks')
-        page_number = total_pages-page_number+1
+        total_pages = cache.get(f'total_weeks_{request.user.id}')
+        page_number = total_pages - page_number + 1
 
-        current_sunday = date.today()-timedelta(days=date.today().weekday())
-        start_date = current_sunday-timedelta(days=(page_number-1)*7)
-        end_date = start_date+timedelta(days=6)
+        current_sunday = date.today() - timedelta(days=date.today().weekday())
+        start_date = current_sunday - timedelta(days=(page_number - 1) * 7)
+        end_date = start_date + timedelta(days=6)
 
-        queryset = self.queryset.filter(
+        queryset = self.get_queryset().filter(
             date__range=[start_date, end_date]).order_by('date')
 
-        days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        days = ['Monday', 'Tuesday', 'Wednesday',
+                'Thursday', 'Friday', 'Saturday', 'Sunday']
         data = []
 
         for single_date in (start_date + timedelta(n) for n in range(7)):
@@ -482,6 +507,7 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
                 'date': single_date,
                 'eggs': eggs
             })
+
         result = {
             'date_range': {
                 'start': start_date,
@@ -493,21 +519,21 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='monthly_total_pages', permission_classes=[IsAuthenticated])
     def monthly_total_pages(self, request):
-        queryset = self.queryset.order_by('date')
-        #if no data present than first date will be today's date
+        queryset = self.get_queryset().order_by('date')
+        # if no data present then first date will be today's date
         first_year = queryset.first().date.year if queryset.exists() else date.today().year
         last_year = queryset.last().date.year if queryset.exists() else date.today().year
         total_years = last_year - first_year + 1
-        cache.set('total_years', total_years, timeout=60*60)
+        cache.set(f'total_years_{request.user.id}', total_years, timeout=60*60)
         return Response({'total_pages': total_years})
 
     @action(detail=False, methods=['get'], url_path='monthly_view', permission_classes=[IsAuthenticated])
     def monthly_view(self, request):
         page_number = int(request.query_params.get('page', 1))
-        total_pages = cache.get('total_years')
-        page_number = total_pages-page_number+1
+        total_pages = cache.get(f'total_years_{request.user.id}')
+        page_number = total_pages - page_number + 1
 
-        queryset = self.queryset.order_by('date')
+        queryset = self.get_queryset().order_by('date')
         current_year = date.today().year
         target_year = current_year - page_number + 1
         start_month = date(target_year, 1, 1)
@@ -515,13 +541,15 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
         data = []
         months = ['January', 'February', 'March', 'April', 'May', 'June',
                   'July', 'August', 'September', 'October', 'November', 'December']
+
         for month in range(1, 13):
             eggs = queryset.filter(date__year=target_year, date__month=month).aggregate(
                 total_eggs=Sum('quantity'))['total_eggs'] or 0
             data.append({
                 'month': months[month - 1],
                 'year': target_year,
-                'eggs': eggs})
+                'eggs': eggs
+            })
 
         result = {
             'month_range': {
@@ -534,13 +562,16 @@ class DailyEggCollectionViewSet(viewsets.ModelViewSet):
 
 
 class SalesViewSet(viewsets.ModelViewSet):
-    queryset = Sales.objects.all().order_by('-date')
     serializer_class = SalesSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = SalesPagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = SalesFilter
     ordering_fields = ['date', 'amount', 'quantity']
+
+    def get_queryset(self):
+        # Filter the queryset to include only the sales entries of the current user
+        return Sales.objects.filter(user=self.request.user).order_by('-date')
 
     def create(self, request, *args, **kwargs):
         serializer = SalesAddSerializer(data=request.data)
@@ -559,9 +590,11 @@ class SalesViewSet(viewsets.ModelViewSet):
                 dealer=dealer,
                 quantity=quantity,
                 amount=amount,
-                description=f'Sold {quantity} eggs at ₹{price_per_piece} per piece'
+                description=f'Sold {quantity} eggs at ₹{price_per_piece} per piece',
+                user=self.request.user  # Assign the sale to the current user
             )
-            egg_stock, created = EggStock.objects.get_or_create(id=1)
+            egg_stock, created = EggStock.objects.get_or_create(
+                user=self.request.user)
             egg_stock.total_stock -= quantity
             egg_stock.save()
 
@@ -583,14 +616,15 @@ class SalesViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='dealer_list', permission_classes=[IsAuthenticated], serializer_class=DealerSerializer)
     def dealer_list(self, request):
-        dealers = Dealer.objects.filter(sales__isnull=False).distinct()
+        dealers = Dealer.objects.filter(
+            sales__user=self.request.user).distinct()
         serializer = DealerSerializer(dealers, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'], url_path='daily_total_pages', permission_classes=[IsAuthenticated])
     def daily_total_pages(self, request):
-        queryset = self.queryset.order_by('date')
-        
+        queryset = self.get_queryset().order_by('date')
+
         first_date = queryset.first().date if queryset.exists() else date.today()
         last_date = date.today()
 
@@ -598,29 +632,30 @@ class SalesViewSet(viewsets.ModelViewSet):
         last_date += timedelta(days=(7 - last_date.weekday()))
 
         total_weeks = (last_date - first_date).days // 7
-        cache.set('total_sales_weeks', total_weeks, timeout=60*60)
+        cache.set(f'total_sales_weeks_{self.request.user.id}', total_weeks, timeout=60*60)
         return Response({'total_pages': total_weeks})
 
     @action(detail=False, methods=['get'], url_path='daily_view', permission_classes=[IsAuthenticated])
     def daily_view(self, request):
         page_number = int(request.query_params.get('page', 1))
-        total_pages = cache.get('total_sales_weeks')
+        total_pages = cache.get(f'total_sales_weeks_{self.request.user.id}')
         page_number = total_pages - page_number + 1
 
         current_sunday = date.today() - timedelta(days=date.today().weekday())
-        
         start_date = current_sunday - timedelta(days=(page_number - 1) * 7)
         end_date = start_date + timedelta(days=6)
-        print(date.today(),current_sunday, start_date, end_date)
 
-        queryset = self.queryset.filter(date__range=[start_date, end_date]).order_by('date')
+        queryset = self.get_queryset().filter(
+            date__range=[start_date, end_date]).order_by('date')
 
-        days=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        days = ['Monday', 'Tuesday', 'Wednesday',
+                'Thursday', 'Friday', 'Saturday', 'Sunday']
         data = []
 
         for single_date in (start_date + timedelta(n) for n in range(7)):
             date_data = queryset.filter(date=single_date)
-            sales = date_data.aggregate(total_sales=Sum('amount'))['total_sales'] or 0
+            sales = date_data.aggregate(total_sales=Sum('amount'))[
+                'total_sales'] or 0
             data.append({
                 'day': days[single_date.weekday()],
                 'date': single_date,
@@ -638,24 +673,25 @@ class SalesViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='monthly_total_pages', permission_classes=[IsAuthenticated])
     def monthly_total_pages(self, request):
-        queryset = self.queryset.order_by('date')
+        queryset = self.get_queryset().order_by('date')
         first_year = queryset.first().date.year if queryset.exists() else date.today().year
         last_year = queryset.last().date.year if queryset.exists() else date.today().year
         total_years = last_year - first_year + 1
-        cache.set('total_sales_years', total_years, timeout=60*60)
+        cache.set(f'total_sales_years_{self.request.user.id}', total_years, timeout=60*60)
         return Response({'total_pages': total_years})
 
     @action(detail=False, methods=['get'], url_path='monthly_view', permission_classes=[IsAuthenticated])
     def monthly_view(self, request):
         page_number = int(request.query_params.get('page', 1))
-        total_pages = cache.get('total_sales_years')
+        total_pages = cache.get(f'total_sales_years_{self.request.user.id}')
         page_number = total_pages - page_number + 1
 
-        queryset = self.queryset.order_by('date')
+        queryset = self.get_queryset().order_by('date')
         current_year = date.today().year
         target_year = current_year - page_number + 1
         start_month = date(target_year, 1, 1)
         end_month = date(target_year, 12, 31)
+
         data = []
         months = ['January', 'February', 'March', 'April', 'May', 'June',
                   'July', 'August', 'September', 'October', 'November', 'December']
@@ -678,61 +714,87 @@ class SalesViewSet(viewsets.ModelViewSet):
         }
         return Response(result)
 
-   
 
 class EarningViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
     pagination_class = MonthlyEarningPagination
 
     def list(self, request):
-        cache_key = 'total_earning_data'
+        user = request.user
+        cache_key = f'total_earning_data_{user.id}'
         cached_data = cache.get(cache_key)
+
         if cached_data:
             return Response(cached_data)
         else:
-            total_expense = Expense.objects.aggregate(total_expense=Sum('amount'))[
-                'total_expense'] or 0
-            total_sales = Sales.objects.aggregate(total_sales=Sum('amount'))[
-                'total_sales'] or 0
+            total_expense = Expense.objects.filter(user=user).aggregate(
+                total_expense=Sum('amount'))['total_expense'] or 0
+            total_sales = Sales.objects.filter(user=user).aggregate(
+                total_sales=Sum('amount'))['total_sales'] or 0
             total_earning = total_sales - total_expense
-            return Response({'total_earning': total_earning, 'total_expense': total_expense, 'total_sales': total_sales})
+
+            response_data = {
+                'total_earning': total_earning,
+                'total_expense': total_expense,
+                'total_sales': total_sales
+            }
+
+            cache.set(cache_key, response_data,
+                      timeout=60*60)  # Cache for 1 hour
+            return Response(response_data)
 
     @action(detail=False, methods=['get'], url_path='this_month', permission_classes=[IsAuthenticated])
-    def this_month(self, request):       
-        total_expense = Expense.objects.filter(date__month=date.today().month,date__year=date.today().year).aggregate(total_expense=Sum('amount'))['total_expense'] or 0
-        total_sales = Sales.objects.filter(date__month=date.today().month,date__year=date.today().year).aggregate(total_sales=Sum('amount'))['total_sales'] or 0
-        print(total_sales, total_expense)
+    def this_month(self, request):
+        user = request.user
+        current_month = date.today().month
+        current_year = date.today().year
+
+        total_expense = Expense.objects.filter(user=user, date__month=current_month, date__year=current_year).aggregate(
+            total_expense=Sum('amount'))['total_expense'] or 0
+        total_sales = Sales.objects.filter(user=user, date__month=current_month, date__year=current_year).aggregate(
+            total_sales=Sum('amount'))['total_sales'] or 0
         total_earning = total_sales - total_expense
-        return Response({'total_earnings': total_earning})
-        
+
+        return Response({
+            'total_earning': total_earning,
+            'total_expense': total_expense,
+            'total_sales': total_sales
+        })
+
     @action(detail=False, methods=['get'], url_path='monthly_total_pages', permission_classes=[IsAuthenticated])
     def monthly_total_pages(self, request):
-        queryset = Sales.objects.order_by('date')
+        user = request.user
+        queryset = Sales.objects.filter(user=user).order_by('date')
+
         first_year = queryset.first().date.year if queryset.exists() else date.today().year
         last_year = queryset.last().date.year if queryset.exists() else date.today().year
         total_years = last_year - first_year + 1
-        cache.set('total_earning_years', total_years, timeout=60*60)
+
+        cache.set(f'total_earning_years_{user.id}', total_years, timeout=60*60)
         return Response({'total_pages': total_years})
 
     @action(detail=False, methods=['get'], url_path='monthly_view', permission_classes=[IsAuthenticated])
     def monthly_view(self, request):
+        user = request.user
         page_number = int(request.query_params.get('page', 1))
-        total_pages = cache.get('total_earning_years')
+        total_pages = cache.get(f'total_earning_years_{user.id}')
         page_number = total_pages - page_number + 1
-        
-        queryset = Sales.objects.order_by('date')
+
+        queryset = Sales.objects.filter(user=user).order_by('date')
         current_year = date.today().year
         target_year = current_year - page_number + 1
-        start_month = date(target_year, 1, 1)
-        end_month = date(target_year, 12, 31)
+
         data = []
         months = ['January', 'February', 'March', 'April', 'May', 'June',
                   'July', 'August', 'September', 'October', 'November', 'December']
-        
-        for month in range(1,13):
-            total_sales = Sales.objects.filter(date__year=target_year, date__month=month).aggregate(total_sales=Sum('amount'))['total_sales'] or 0
-            total_expense = Expense.objects.filter(date__year=target_year, date__month=month).aggregate(total_expense=Sum('amount'))['total_expense'] or 0
+
+        for month in range(1, 13):
+            total_sales = Sales.objects.filter(user=user, date__year=target_year, date__month=month).aggregate(
+                total_sales=Sum('amount'))['total_sales'] or 0
+            total_expense = Expense.objects.filter(user=user, date__year=target_year, date__month=month).aggregate(
+                total_expense=Sum('amount'))['total_expense'] or 0
             total_earning = total_sales - total_expense
+
             data.append({
                 'month': months[month-1],
                 'year': target_year,
@@ -740,6 +802,7 @@ class EarningViewSet(viewsets.ViewSet):
                 'total_expense': total_expense,
                 'total_earning': total_earning
             })
+
         result = {
             'month_range': {
                 'start': f'January {target_year}',
@@ -747,38 +810,48 @@ class EarningViewSet(viewsets.ViewSet):
             },
             'results': data
         }
+
         return Response(result)
-    
-         
 
 
 class CurrentFeedViewSet(viewsets.ModelViewSet):
-    queryset = CurrentFeed.objects.all()
     serializer_class = CurrentFeedSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Return queryset filtered by the current user
+        return CurrentFeed.objects.filter(user=self.request.user)
 
     def update(self, request, pk=None):
         try:
             instance = self.get_object()
-            serializer = self.get_serializer(
-                instance, data=request.data, partial=True)
+            # Ensure the object belongs to the current user
+            if instance.user != request.user:
+                return Response({'error': 'You do not have permission to update this record.'},
+                                status=status.HTTP_403_FORBIDDEN)
+            # Update instance with partial data
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
             return Response(serializer.data)
+        except CurrentFeed.DoesNotExist:
+            return Response({"error": "Current feed not found."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'], url_path='total_stock', permission_classes=[IsAuthenticated])
     def total_stock(self, request):
-        total_stock = CurrentFeed.objects.aggregate(
+        # Aggregate the total stock for the current user's queryset
+        total_stock = self.get_queryset().aggregate(
             total_stock=Sum('quantity'))['total_stock'] or 0
         return Response({'total_stock': total_stock})
 
     def perform_update(self, serializer):
+        # Save the updated instance
         instance = serializer.save()
+        # If the updated quantity is 0, delete the instance
         if instance.quantity == 0:
             instance.delete()
-
 
 class ClearCacheView(APIView):
     permission_classes = [IsAuthenticated]
@@ -813,7 +886,7 @@ class ChatbotView(APIView):
         },
         'this_month': {
             'start_date': lambda: datetime(datetime.now().year, datetime.now().month, 1).date(),
-            'end_date': lambda: datetime(datetime.now().year, datetime.now().month, datetime.now().day).date(),
+            'end_date': lambda: datetime.now().date(),
         },
         'last_month': {
             'start_date': lambda: (datetime(datetime.now().year, datetime.now().month, 1) - relativedelta(months=1)).date(),
@@ -821,11 +894,11 @@ class ChatbotView(APIView):
         },
         'last_3_months': {
             'start_date': lambda: (datetime(datetime.now().year, datetime.now().month, 1) - relativedelta(months=3)).date(),
-            'end_date': lambda: datetime(datetime.now().year, datetime.now().month, datetime.now().day).date(),
+            'end_date': lambda: datetime.now().date(),
         },
         'last_6_months': {
             'start_date': lambda: (datetime(datetime.now().year, datetime.now().month, 1) - relativedelta(months=6)).date(),
-            'end_date': lambda: datetime(datetime.now().year, datetime.now().month, datetime.now().day).date(),
+            'end_date': lambda: datetime.now().date(),
         },
     }
 
@@ -840,66 +913,42 @@ class ChatbotView(APIView):
     }
 
     def get(self, request, selected_type, selected_period):
+        # Ensure the selected period is valid
+        if selected_period not in self.PERIOD_CHOICES:
+            return Response({'error': 'Invalid period'}, status=400)
+
+        # Get the start and end dates for the selected period
+        start_date = self.PERIOD_CHOICES[selected_period]['start_date']()
+        end_date = self.PERIOD_CHOICES[selected_period]['end_date']()
+
+        # Fetch data for the selected type
         if selected_type == 'sales':
-            queryset = Sales.objects.all()
-            if selected_period in self.PERIOD_CHOICES:
-                start_date = self.PERIOD_CHOICES[selected_period]['start_date'](
-                )
-                end_date = self.PERIOD_CHOICES[selected_period]['end_date']()
-                queryset = queryset.filter(date__range=[start_date, end_date])
-                total_sales = queryset.aggregate(total_sales=Sum('amount'))[
-                    'total_sales'] or 0
-                return Response({'data': f'₹{total_sales} sales {self.mapping[selected_period]}'})
+            queryset = Sales.objects.filter(user=request.user).filter(date__range=[start_date, end_date])
+            total_sales = queryset.aggregate(total_sales=Sum('amount'))['total_sales'] or 0
+            return Response({'data': f'₹{total_sales} sales {self.mapping[selected_period]}'})
 
         elif selected_type == 'expenses':
-            queryset = Expense.objects.all()
-            if selected_period in self.PERIOD_CHOICES:
-                start_date = self.PERIOD_CHOICES[selected_period]['start_date'](
-                )
-                end_date = self.PERIOD_CHOICES[selected_period]['end_date']()
-                queryset = queryset.filter(date__range=[start_date, end_date])
-                total_expense = queryset.aggregate(total_expense=Sum('amount'))[
-                    'total_expense'] or 0
-                return Response({'data': f'₹{total_expense} spent {self.mapping[selected_period]}'})
+            queryset = Expense.objects.filter(user=request.user).filter(date__range=[start_date, end_date])
+            total_expense = queryset.aggregate(total_expense=Sum('amount'))['total_expense'] or 0
+            return Response({'data': f'₹{total_expense} spent {self.mapping[selected_period]}'})
 
         elif selected_type == 'earning':
-            sales_queryset = Sales.objects.all()
-            expense_queryset = Expense.objects.all()
-            if selected_period in self.PERIOD_CHOICES:
-                start_date = self.PERIOD_CHOICES[selected_period]['start_date'](
-                )
-                end_date = self.PERIOD_CHOICES[selected_period]['end_date']()
-                sales_queryset = sales_queryset.filter(
-                    date__range=[start_date, end_date])
-                expense_queryset = expense_queryset.filter(
-                    date__range=[start_date, end_date])
-                total_sales = sales_queryset.aggregate(total_sales=Sum('amount'))[
-                    'total_sales'] or 0
-                total_expense = expense_queryset.aggregate(total_expense=Sum('amount'))[
-                    'total_expense'] or 0
-                total_earning = total_sales - total_expense
-                return Response({'data': f'₹{total_earning} earnt {self.mapping[selected_period]}'})
+            sales_queryset = Sales.objects.filter(user=request.user).filter(date__range=[start_date, end_date])
+            expense_queryset = Expense.objects.filter(user=request.user).filter(date__range=[start_date, end_date])
+            total_sales = sales_queryset.aggregate(total_sales=Sum('amount'))['total_sales'] or 0
+            total_expense = expense_queryset.aggregate(total_expense=Sum('amount'))['total_expense'] or 0
+            total_earning = total_sales - total_expense
+            return Response({'data': f'₹{total_earning} earned {self.mapping[selected_period]}'})
 
         elif selected_type == 'eggs_collected':
-            queryset = DailyEggCollection.objects.all()
-            if selected_period in self.PERIOD_CHOICES:
-                start_date = self.PERIOD_CHOICES[selected_period]['start_date'](
-                )
-                end_date = self.PERIOD_CHOICES[selected_period]['end_date']()
-                queryset = queryset.filter(date__range=[start_date, end_date])
-                total_eggs = queryset.aggregate(total_eggs=Sum('quantity'))[
-                    'total_eggs'] or 0
-                return Response({'data': f'{total_eggs} eggs collected {self.mapping[selected_period]}'})
+            queryset = DailyEggCollection.objects.filter(user=request.user).filter(date__range=[start_date, end_date])
+            total_eggs = queryset.aggregate(total_eggs=Sum('quantity'))['total_eggs'] or 0
+            return Response({'data': f'{total_eggs} eggs collected {self.mapping[selected_period]}'})
 
         elif selected_type == 'eggs_sold':
-            queryset = Sales.objects.all()
-            if selected_period in self.PERIOD_CHOICES:
-                start_date = self.PERIOD_CHOICES[selected_period]['start_date'](
-                )
-                end_date = self.PERIOD_CHOICES[selected_period]['end_date']()
-                queryset = queryset.filter(date__range=[start_date, end_date])
-                total_eggs = queryset.aggregate(total_eggs=Sum('quantity'))[
-                    'total_eggs'] or 0
-                return Response({'data': f'{total_eggs} eggs sold {self.mapping[selected_period]}'})
+            queryset = Sales.objects.filter(user=request.user).filter(date__range=[start_date, end_date])
+            total_eggs = queryset.aggregate(total_eggs=Sum('quantity'))['total_eggs'] or 0
+            return Response({'data': f'{total_eggs} eggs sold {self.mapping[selected_period]}'})
 
-        return Response({'error': 'Invalid type or period'}, status=400)
+        # Return error if type is invalid
+        return Response({'error': 'Invalid type'}, status=400)

@@ -20,7 +20,7 @@ const fetchTotalEarnings = async () => {
   }
 
   const data = await response.json();
-  return data.total_earnings;
+  return data.total_earning;
 };
 
 const EarningCard = () => {
