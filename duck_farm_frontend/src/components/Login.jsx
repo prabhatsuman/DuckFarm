@@ -31,14 +31,14 @@ const Login = ({ toggleComponent }) => {
         localStorage.setItem(`${API_URL}:accessToken`, response.data.access);
         localStorage.setItem(`${API_URL}:refreshToken`, response.data.refresh);
         console.log("Login successful:", response.data);
-        navigate("/dashboard/home"); // Redirect to dashboard after successful login
+        navigate("/dashboard/home"); 
       })
       .catch((error) => {
         console.error("Login failed:", error);
         if (error.response && error.response.data) {
-          alert("Incorrect Email Or Password"); // Show error message from backend in a popup
+          alert("Incorrect Email Or Password"); 
         } else {
-          alert("An unknown error occurred."); // Show a generic error message in a popup
+          alert("An unknown error occurred."); 
         }
       });
   };

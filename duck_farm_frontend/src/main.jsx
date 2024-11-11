@@ -1,4 +1,3 @@
-
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
@@ -7,12 +6,10 @@ import reportWebVitals from "./reportWebVitals";
 import { refreshToken } from "./utils/auth";
 import { BrowserRouter } from "react-router-dom";
 if (!import.meta.env.DEV) {
-    console.log = function() {};
-  }
-  
+  console.log = function () {};
+}
 
-// Set up a refresh interval (e.g., every 20 minutes, before the token expires)
-const REFRESH_INTERVAL = 20 * 60 * 1000; // 20 minutes in milliseconds
+const REFRESH_INTERVAL = 19 * 60 * 1000;
 
 setInterval(refreshToken, REFRESH_INTERVAL);
 

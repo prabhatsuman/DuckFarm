@@ -33,7 +33,7 @@ function App() {
           );
         } catch (error) {
           console.error("Failed to refresh token:", error);
-          setIsLoggedIn(false);
+          navigate("/");
         }
       }
       setIsCheckingAuth(false);
