@@ -4,52 +4,48 @@ import { useNavigate } from "react-router-dom";
 import API_URL from "../config";
 
 const Signup = ({ toggleComponent }) => {
-  const navigate = useNavigate();
   const [signupState, setSignupState] = useState({
     firstName: "",
     lastName: "",
-    username: "",
+    farmname: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
-  const [error, setError] = useState("");
+
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [success, setSuccess] = useState(false);
 
   const handleChange = (e) => {
     setSignupState({ ...signupState, [e.target.name]: e.target.value });
+    setFieldErrors({ ...fieldErrors, [e.target.name]: null }); // Clear error when user types
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (signupState.password !== signupState.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-    registerUser();
-  };
 
-  const registerUser = () => {
-    const { firstName, lastName, username, email, password } = signupState;
+    const { firstName, lastName, farmname, email, password, confirmPassword } = signupState;
 
+    // Send the data to the backend
     axios
       .post(`${API_URL}/api/register/`, {
         first_name: firstName,
         last_name: lastName,
-        username: username,
-        email: email,
-        password: password,
+        farm_name: farmname,
+        email,
+        password,
+        confirm_password: confirmPassword,
       })
       .then((response) => {
         console.log("Signup successful:", response.data);
-        alert("Signup successful!");
-        toggleComponent(); // Toggle component after successful signup
+        setSuccess(true);
+        setFieldErrors({});
+        toggleComponent(); // Navigate or change component
       })
       .catch((error) => {
         console.error("Signup failed:", error);
         if (error.response && error.response.data) {
-          alert(error.response.data.detail); // Show error message from backend in an alert
-        } else {
-          alert("An unknown error occurred."); // Show a generic error message in an alert
+          setFieldErrors(error.response.data); // Map backend errors directly to state
         }
       });
   };
@@ -64,101 +60,115 @@ const Signup = ({ toggleComponent }) => {
                 id="firstName"
                 name="firstName"
                 type="text"
-                autoComplete="given-name"
                 required
-                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                 placeholder="Enter your first name"
                 value={signupState.firstName}
                 onChange={handleChange}
               />
+              {fieldErrors.first_name && (
+                <div className="text-red-500 text-sm mt-1">{fieldErrors.first_name[0]}</div>
+              )}
             </div>
             <div>
               <input
                 id="lastName"
                 name="lastName"
                 type="text"
-                autoComplete="family-name"
                 required
-                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                 placeholder="Enter your last name"
                 value={signupState.lastName}
                 onChange={handleChange}
               />
+              {fieldErrors.last_name && (
+                <div className="text-red-500 text-sm mt-1">{fieldErrors.last_name[0]}</div>
+              )}
             </div>
           </div>
           <div>
             <input
-              id="username"
-              name="username"
+              id="farmname"
+              name="farmname"
               type="text"
-              autoComplete="username"
               required
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Enter your username"
-              value={signupState.username}
+              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
+              placeholder="Enter your farm name"
+              value={signupState.farmname}
               onChange={handleChange}
             />
+            {fieldErrors.farm_name && (
+              <div className="text-red-500 text-sm mt-1">{fieldErrors.farm_name[0]}</div>
+            )}
           </div>
           <div>
             <input
               id="email"
               name="email"
               type="email"
-              autoComplete="email"
               required
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
               placeholder="Enter your email"
               value={signupState.email}
               onChange={handleChange}
             />
+            {fieldErrors.email && (
+              <div className="text-red-500 text-sm mt-1">{fieldErrors.email[0]}</div>
+            )}
           </div>
           <div>
             <input
               id="password"
               name="password"
               type="password"
-              autoComplete="new-password"
               required
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
               placeholder="Enter your password"
               value={signupState.password}
               onChange={handleChange}
             />
+            {fieldErrors.password &&
+              fieldErrors.password.map((error, index) => (
+                <div key={index} className="text-red-500 text-sm mt-1">
+                  {error}
+                </div>
+              ))}
           </div>
           <div>
             <input
               id="confirmPassword"
               name="confirmPassword"
               type="password"
-              autoComplete="new-password"
               required
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
               placeholder="Confirm your password"
               value={signupState.confirmPassword}
               onChange={handleChange}
             />
+            {fieldErrors.confirm_password && (
+              <div className="text-red-500 text-sm mt-1">{fieldErrors.confirm_password[0]}</div>
+            )}
           </div>
-          {error && (
-            <div className="text-red-500 text-sm mt-2">
-              {error}
+          {success && (
+            <div className="text-green-500 text-sm mt-2">
+              Signup successful! Please log in.
             </div>
           )}
           <div className="flex flex-col gap-7">
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-950 hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-950 hover:bg-blue-900"
             >
               Sign Up
             </button>
             <button
               type="button"
               onClick={toggleComponent}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-700 hover:bg-green-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-700 hover:bg-green-900"
             >
               Log in
             </button>
           </div>
-        
         </form>
       </div>
     </div>

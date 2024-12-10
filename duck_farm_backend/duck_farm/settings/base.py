@@ -129,6 +129,7 @@ AUTHENTICATION_BACKENDS = [
     'management.authentication.EmailBackend',  # Custom email backend
 ]
 
+AUTH_USER_MODEL = 'management.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/

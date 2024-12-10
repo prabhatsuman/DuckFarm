@@ -1,29 +1,37 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import DuckInfo, Dealer, Expense, FeedStock, MedicineStock, OtherStock, EggStock, DailyEggCollection, Sales, CurrentFeed
+from .models import User, DuckInfo, Dealer, Expense, FeedStock, MedicineStock, OtherStock, EggStock, DailyEggCollection, Sales, CurrentFeed
 from datetime import datetime
-
+from django.contrib.auth.password_validation import validate_password
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email']
+        fields = ['id', 'email', 'first_name', 'last_name', 'farm_name']       
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True)
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    confirm_password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'first_name', 'last_name']
-        extra_kwargs = {
-            'password': {'write_only': True},
-            'email': {'required': True}
-        }
+        fields = ['email', 'first_name', 'last_name', 'farm_name', 'password', 'confirm_password']
 
-    def create(self, validated_data):
-        password = validated_data.pop('password')
-        user = User.objects.create_user(**validated_data, password=password)
+    def validate(self, attrs):   
+        if attrs['password'] != attrs['confirm_password']:
+            raise serializers.ValidationError({"confirm_password": "Password fields didn't match."})
+        return attrs
+
+    def create(self, validated_data):      
+        validated_data.pop('confirm_password')
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            farm_name=validated_data['farm_name'],
+            password=validated_data['password']
+        )
         return user
 
 

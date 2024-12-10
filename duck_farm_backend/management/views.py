@@ -3,11 +3,12 @@ from django.db.models import Sum, F
 from rest_framework import viewsets, generics, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from .models import DuckInfo, Dealer, Expense, Stock, FeedStock, MedicineStock, OtherStock, EggStock, DailyEggCollection, Sales, CurrentFeed
+from .models import DuckInfo, Dealer, Expense, Stock, FeedStock, MedicineStock, OtherStock, EggStock, DailyEggCollection, Sales, CurrentFeed,User
 from datetime import timedelta, date, datetime
 from .utils import daterange
 from rest_framework.pagination import PageNumberPagination
@@ -40,39 +41,80 @@ from .serializers import (
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
+class LoginView(APIView):
+    permission_classes = [AllowAny]
 
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        # Check if email and password are provided
+        if not email:
+            return Response({"email": "Email is required."}, status=400)
+        if not password:
+            return Response({"password": "Password is required."}, status=400)
+
+        # Check if the email exists in the database
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"email": "Email address does not exist."}, status=404)
+
+        # Validate password
+        if not user.check_password(password):
+            return Response({"password": "Invalid password."}, status=400)
+
+        # Check if the user's account is active
+        if not user.is_active:
+            return Response({"email": "User account is disabled."}, status=403)
+
+        # Authenticate the user
+        user = authenticate(request, email=email, password=password)
+        if not user:
+            raise AuthenticationFailed("Authentication failed. Please check your credentials.")
+
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "farm_name": user.farm_name,
+            },
+        })
 class RegisterView(generics.CreateAPIView):
     permission_classes = (AllowAny,)
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
 
-
-class LoginView(APIView):
-    permission_classes = (AllowAny,)
-
     def post(self, request, *args, **kwargs):
-        username = request.data.get('username')
-        email = request.data.get('email')
-        password = request.data.get('password')
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        if not (username or email):
-            return Response({'error': 'Username or email is required'}, status=400)
+        # Create the user
+        user = serializer.save()
 
-        user = None
-        if username:
-            user = authenticate(username=username, password=password)
-        elif email:
-            user = authenticate(email=email, password=password)
+        # Return response excluding sensitive information like the password
+        return Response(
+            {
+                "message": "User registered successfully.",
+                "user": {
+                    "email": user.email,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "farm_name": user.farm_name,
+                },
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
-        if user:
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'username': user.username,
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            })
-        else:
-            return Response({'error': 'Invalid Credentials'}, status=400)
+
+
 
 
 class DuckInfoViewSet(viewsets.ModelViewSet):
